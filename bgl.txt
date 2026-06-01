@@ -1,0 +1,5 @@
+- mapear classes ✅
+- implementar formulários
+- configurar banco de dados para os formulários
+- criação diagramas
+- exportação documento
