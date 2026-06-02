@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPC - Plano Pedagógico de Curso</title>
+    <link rel="stylesheet" href="frontend/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Gerador de Plano Pedagógico de Curso (PPC)</h1>
+            <p class="subtitle">IFPE - Campus Belo Jardim</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="tabs-navigation">
+            <button class="tab-button active" data-tab="tab-1">1. Dados Gerais</button>
+            <button class="tab-button" data-tab="tab-2">2. Currículo</button>
+            <button class="tab-button" data-tab="tab-3">3. Instituição</button>
+            <button class="tab-button" data-tab="tab-4">4. Coordenador</button>
+            <button class="tab-button" data-tab="tab-5">5. Infraestrutura</button>
+        </div>
+
+        <!-- Tab 1: Dados Gerais do Curso -->
+        <div id="tab-1" class="tab-content active">
+            <div class="tab-header">
+                <h2>1. Identificação e Dados Gerais do Curso</h2>
+                <p class="description">Preencha as informações básicas e obrigatórias do curso.</p>
+            </div>
+            <form id="form-dados-gerais" class="form">
+                <fieldset>
+                    <legend>Identificação do Curso</legend>
+
+                    <div class="form-group">
+                        <label for="course_name">Nome do Curso *</label>
+                        <input type="text" id="course_name" name="course_name" required placeholder="Ex: Engenharia de Software">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="knowledge_area">Área de Conhecimento *</label>
+                            <input type="text" id="knowledge_area" name="knowledge_area" required placeholder="Ex: Engenharia">
+                        </div>
+                        <div class="form-group">
+                            <label for="year">Ano de Implantação *</label>
+                            <input type="number" id="year" name="year" required min="2000" max="2100">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="level">Nível *</label>
+                            <select id="level" name="level" required>
+                                <option value="">Selecione...</option>
+                                <option value="Graduação">Graduação</option>
+                                <option value="Pós-Graduação">Pós-Graduação</option>
+                                <option value="Técnico">Técnico</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="degree_title">Grau/Diploma *</label>
+                            <input type="text" id="degree_title" name="degree_title" required placeholder="Ex: Bacharelado">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modality">Modalidade *</label>
+                            <select id="modality" name="modality" required>
+                                <option value="">Selecione...</option>
+                                <option value="Presencial">Presencial</option>
+                                <option value="EaD">EaD</option>
+                                <option value="Híbrida">Híbrida</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="class_duration_minutes">Duração da Aula (minutos) *</label>
+                            <input type="number" id="class_duration_minutes" name="class_duration_minutes" required min="30" max="120" value="45">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Carga Horária</legend>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="total_workload_clock_hours">Carga Horária Total (h/r) *</label>
+                            <input type="number" id="total_workload_clock_hours" name="total_workload_clock_hours" required min="1000" value="3205">
+                            <small>Deve ser exatamente 3205 h/r</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="total_workload_class_hours">Carga Horária em Aula (h/a) *</label>
+                            <input type="number" id="total_workload_class_hours" name="total_workload_class_hours" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="complementary_activities_hours">Horas de Atividades Complementares (h/r) *</label>
+                            <input type="number" id="complementary_activities_hours" name="complementary_activities_hours" required min="0" value="200">
+                        </div>
+                        <div class="form-group">
+                            <label for="extension_activities_hours">Horas de Extensão (h/r) *</label>
+                            <input type="number" id="extension_activities_hours" name="extension_activities_hours" required min="0" value="320.5">
+                            <small>Deve ser 10% da carga total (320.5 h/r)</small>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Duração e Regime de Matrícula</legend>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="min_completion_semesters">Duração Mínima (semestres) *</label>
+                            <input type="number" id="min_completion_semesters" name="min_completion_semesters" required min="1" max="20" value="8">
+                        </div>
+                        <div class="form-group">
+                            <label for="max_completion_semesters">Duração Máxima (semestres) *</label>
+                            <input type="number" id="max_completion_semesters" name="max_completion_semesters" required min="1" max="20" value="16">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="enrollment_regime">Regime de Matrícula *</label>
+                            <select id="enrollment_regime" name="enrollment_regime" required>
+                                <option value="">Selecione...</option>
+                                <option value="Semestral">Semestral</option>
+                                <option value="Anual">Anual</option>
+                                <option value="Modular">Modular</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="weeks_per_semester">Semanas por Semestre *</label>
+                            <input type="number" id="weeks_per_semester" name="weeks_per_semester" required min="10" max="26" value="20">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Acesso e Vagas</legend>
+
+                    <div class="form-group">
+                        <label for="access_form">Forma de Acesso *</label>
+                        <input type="text" id="access_form" name="access_form" required placeholder="Ex: Processo de seleção ENEM">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admission_requirement">Pré-requisito de Admissão</label>
+                        <textarea id="admission_requirement" name="admission_requirement" rows="3" placeholder="Ex: Ensino Médio Completo"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="annual_vacancies">Vagas por Ano *</label>
+                            <input type="number" id="annual_vacancies" name="annual_vacancies" required min="1" value="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="vacancies_per_shift">Vagas por Turno *</label>
+                            <input type="number" id="vacancies_per_shift" name="vacancies_per_shift" required min="1" value="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="shift">Turno *</label>
+                            <select id="shift" name="shift" required>
+                                <option value="">Selecione...</option>
+                                <option value="Matutino">Matutino</option>
+                                <option value="Vespertino">Vespertino</option>
+                                <option value="Noturno">Noturno</option>
+                                <option value="Integral">Integral</option>
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Status e Indicadores</legend>
+
+                    <div class="form-group">
+                        <label for="course_status">Status do Curso *</label>
+                        <select id="course_status" name="course_status" required>
+                            <option value="">Selecione...</option>
+                            <option value="Awaiting Authorization">Aguardando Autorização</option>
+                            <option value="Authorized">Autorizado</option>
+                            <option value="Awaiting MEC Recognition">Aguardando Reconhecimento MEC</option>
+                            <option value="Recognized by MEC">Reconhecido pelo MEC</option>
+                            <option value="Awaiting Renewal">Aguardando Renovação</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reformulation_type">Tipo de Reformulação *</label>
+                        <select id="reformulation_type" name="reformulation_type" required>
+                            <option value="">Selecione...</option>
+                            <option value="Initial">Inicial</option>
+                            <option value="Partial">Parcial</option>
+                            <option value="Full">Total</option>
+                        </select>
+                    </div>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Dados Gerais</button>
+                    <button type="reset" class="btn btn-secondary">Limpar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tab 2: Currículo -->
+        <div id="tab-2" class="tab-content">
+            <div class="tab-header">
+                <h2>2. Currículo e Disciplinas</h2>
+                <p class="description">Gerencie as disciplinas do curso.</p>
+            </div>
+            <p class="placeholder">Formulário de currículo será implementado aqui.</p>
+        </div>
+
+        <!-- Tab 3: Instituição -->
+        <div id="tab-3" class="tab-content">
+            <div class="tab-header">
+                <h2>3. Identificação da Instituição</h2>
+                <p class="description">Preencha os dados da equipe institucional e comissão do PPC.</p>
+            </div>
+            <form id="form-instituicao" class="form">
+                <fieldset>
+                    <legend>Equipe Institucional</legend>
+
+                    <div class="authority-group">
+                        <h3>Gestão Institucional</h3>
+
+                        <div class="form-group">
+                            <label for="reitor_name">Reitor/Reitora *</label>
+                            <input type="text" id="reitor_name" name="reitor_name" required placeholder="Nome completo">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pro_reitor_ensino_name">Pró-Reitora/Pró-Reitor de Ensino *</label>
+                                <input type="text" id="pro_reitor_ensino_name" name="pro_reitor_ensino_name" required placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label for="pro_reitor_pesquisa_name">Pró-Reitora/Pró-Reitor de Pesquisa</label>
+                                <input type="text" id="pro_reitor_pesquisa_name" name="pro_reitor_pesquisa_name" placeholder="Nome completo">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pro_reitor_extensao_name">Pró-Reitora/Pró-Reitor de Extensão</label>
+                                <input type="text" id="pro_reitor_extensao_name" name="pro_reitor_extensao_name" placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label for="pro_reitor_desenvolvimento_name">Pró-Reitora/Pró-Reitor de Desenvolvimento Institucional</label>
+                                <input type="text" id="pro_reitor_desenvolvimento_name" name="pro_reitor_desenvolvimento_name" placeholder="Nome completo">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pro_reitor_administracao_name">Pró-Reitora/Pró-Reitor de Administração</label>
+                                <input type="text" id="pro_reitor_administracao_name" name="pro_reitor_administracao_name" placeholder="Nome completo">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="authority-group">
+                        <h3>Campus Belo Jardim</h3>
+
+                        <div class="form-group">
+                            <label for="diretor_geral_name">Diretor/Diretora Geral do Campus *</label>
+                            <input type="text" id="diretor_geral_name" name="diretor_geral_name" required placeholder="Nome completo">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="diretor_admin_name">Diretor/Diretora de Administração e Planejamento</label>
+                                <input type="text" id="diretor_admin_name" name="diretor_admin_name" placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label for="diretor_desenvolvimento_name">Diretor/Diretora de Desenvolvimento Educacional</label>
+                                <input type="text" id="diretor_desenvolvimento_name" name="diretor_desenvolvimento_name" placeholder="Nome completo">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="chefe_deac_name">Chefe/Chefa da DEAC *</label>
+                                <input type="text" id="chefe_deac_name" name="chefe_deac_name" required placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label for="coordenador_academico_name">Coordenador/Coordenadora Acadêmica</label>
+                                <input type="text" id="coordenador_academico_name" name="coordenador_academico_name" placeholder="Nome completo">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="coordenador_extensao_name">Coordenador/Coordenadora de Extensão</label>
+                                <input type="text" id="coordenador_extensao_name" name="coordenador_extensao_name" placeholder="Nome completo">
+                            </div>
+                            <div class="form-group">
+                                <label for="coordenador_pesquisa_name">Coordenador/Coordenadora de Pesquisa</label>
+                                <input type="text" id="coordenador_pesquisa_name" name="coordenador_pesquisa_name" placeholder="Nome completo">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bibliotecario_name">Bibliotecário/Bibliotecária</label>
+                            <input type="text" id="bibliotecario_name" name="bibliotecario_name" placeholder="Nome completo">
+                        </div>
+                    </div>
+
+                    <div class="authority-group">
+                        <h3>Coordenação do Curso</h3>
+
+                        <div class="form-group">
+                            <label for="coordenador_curso_name">Coordenador/Coordenadora do Curso *</label>
+                            <input type="text" id="coordenador_curso_name" name="coordenador_curso_name" required placeholder="Nome completo">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assessor_pedagogico_name">Assessor/Assessora Pedagógica</label>
+                            <input type="text" id="assessor_pedagogico_name" name="assessor_pedagogico_name" placeholder="Nome completo">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Comissão Elaboradora do PPC</legend>
+
+                    <div class="form-group">
+                        <label for="num_members">Número de Membros da Comissão *</label>
+                        <input type="number" id="num_members" name="num_members" required min="1" max="20" placeholder="Ex: 5">
+                    </div>
+
+                    <div id="commission-members" class="commission-members-container">
+                        <!-- Os membros serão adicionados dinamicamente -->
+                    </div>
+
+                    <div class="form-note">
+                        <p><strong>Nota:</strong> Após indicar o número de membros, serão exibidos campos para adicionar o nome e portaria de cada membro.</p>
+                    </div>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Dados da Instituição</button>
+                    <button type="reset" class="btn btn-secondary">Limpar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tab 4: Coordenador -->
+        <div id="tab-4" class="tab-content">
+            <div class="tab-header">
+                <h2>4. Perfil do Coordenador</h2>
+                <p class="description">Informações sobre o coordenador do curso.</p>
+            </div>
+            <p class="placeholder">Formulário do coordenador será implementado aqui.</p>
+        </div>
+
+        <!-- Tab 5: Infraestrutura -->
+        <div id="tab-5" class="tab-content">
+            <div class="tab-header">
+                <h2>5. Infraestrutura</h2>
+                <p class="description">Inventário de salas, laboratórios e equipamentos.</p>
+            </div>
+            <p class="placeholder">Formulário de infraestrutura será implementado aqui.</p>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2024 IFPE - Campus Belo Jardim. Sistema de Geração de PPC.</p>
+        </footer>
+    </div>
+
+    <script src="frontend/js/tabs.js"></script>
+</body>
+</html>
