@@ -4,167 +4,250 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PPC - Plano Pedagógico de Curso</title>
-    <link rel="stylesheet" href="frontend/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
 </head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1>Gerador de Plano Pedagógico de Curso (PPC)</h1>
-            <p class="subtitle">IFPE - Campus Belo Jardim</p>
+<body class="bg-gray-50 min-h-screen">
+
+    <div class="max-w-5xl mx-auto px-6 py-8">
+
+        <!-- Header -->
+        <header class="mb-8">
+                <h1 class="text-2xl font-bold text-gray-900">Gerador de Plano Pedagógico de Curso (PPC)</h1>
+                <p class="text-sm text-gray-500 mt-1">IFPE - Campus Belo Jardim</p>
         </header>
 
-        <!-- Tabs Navigation -->
-        <div class="tabs-navigation">
-            <button class="tab-button active" data-tab="tab-1">1. Dados Gerais</button>
-            <button class="tab-button" data-tab="tab-2">2. Currículo</button>
-            <button class="tab-button" data-tab="tab-3">3. Instituição</button>
-            <button class="tab-button" data-tab="tab-4">4. Coordenador</button>
-            <button class="tab-button" data-tab="tab-5">5. Infraestrutura</button>
-        </div>
-
-        <!-- Tab 1: Dados Gerais do Curso -->
-        <div id="tab-1" class="tab-content active">
-            <div class="tab-header">
-                <h2>1. Identificação e Dados Gerais do Curso</h2>
-                <p class="description">Preencha as informações básicas e obrigatórias do curso.</p>
+        <!-- ============================================ -->
+        <!-- Card 1: Informações da Proponente           -->
+        <!-- ============================================ -->
+        <section id="card-1" class="mb-8 bg-white border border-gray-200 rounded-lg p-6">
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 ">Informações da Proponente</h2>
+                <p class="text-sm text-gray-500 mt-1">Preencha os dados institucionais do campus proponente.</p>
             </div>
-            <form id="form-dados-gerais" class="form">
-                <fieldset>
-                    <legend>Identificação do Curso</legend>
 
-                    <div class="form-group">
-                        <label for="course_name">Nome do Curso *</label>
-                        <input type="text" id="course_name" name="course_name" required placeholder="Ex: Engenharia de Software">
-                    </div>
+            <form id="form-proponente">
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="knowledge_area">Área de Conhecimento *</label>
-                            <input type="text" id="knowledge_area" name="knowledge_area" required placeholder="Ex: Engenharia">
-                        </div>
-                        <div class="form-group">
-                            <label for="year">Ano de Implantação *</label>
-                            <input type="number" id="year" name="year" required min="2000" max="2100">
-                        </div>
-                    </div>
+                <!-- Dados Institucionais -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Dados Institucionais</h3>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="level">Nível *</label>
-                            <select id="level" name="level" required>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="campus_name" class="block text-sm text-gray-700 mb-1">Nome do Campus *</label>
+                            <select id="campus_name" name="campus_name" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
                                 <option value="">Selecione...</option>
-                                <option value="Graduação">Graduação</option>
-                                <option value="Pós-Graduação">Pós-Graduação</option>
-                                <option value="Técnico">Técnico</option>
+                                <option value="Belo Jardim">Campus Belo Jardim</option>
+                                <option value="Recife">Campus Recife</option>
+                                <option value="Garanhuns">Campus Garanhuns</option>
+                                <option value="Caruaru">Campus Caruaru</option>
+                                <option value="Pesqueira">Campus Pesqueira</option>
+                                <option value="Afogados">Campus Afogados da Ingazeira</option>
+                                <option value="Barreiros">Campus Barreiros</option>
+                                <option value="Vitória">Campus Vitória de Santo Antão</option>
+                                <option value="Palmares">Campus Palmares</option>
+                                <option value="Ipojuca">Campus Ipojuca</option>
+                                <option value="Jaboatão">Campus Jaboatão dos Guararapes</option>
+                                <option value="Paulista">Campus Paulista</option>
+                                <option value="Cabo">Campus Cabo de Santo Agostinho</option>
+                                <option value="Igarassu">Campus Igarassu</option>
+                                <option value="Olinda">Campus Olinda</option>
+                                <option value="Abreu e Lima">Campus Abreu e Lima</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="degree_title">Grau/Diploma *</label>
-                            <input type="text" id="degree_title" name="degree_title" required placeholder="Ex: Bacharelado">
+                        <div>
+                            <label for="cnpj" class="block text-sm text-gray-700 mb-1">CNPJ *</label>
+                            <input type="text" id="cnpj" name="cnpj" required placeholder="Ex: 10.767.239/0001-45" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endereço -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Endereço</h3>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="cidade" class="block text-sm text-gray-700 mb-1">Cidade *</label>
+                            <input type="text" id="cidade" name="cidade" required placeholder="Ex: Belo Jardim" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="cep" class="block text-sm text-gray-700 mb-1">CEP *</label>
+                            <input type="text" id="cep" name="cep" required placeholder="Ex: 55150-000" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="modality">Modalidade *</label>
-                            <select id="modality" name="modality" required>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label for="bairro" class="block text-sm text-gray-700 mb-1">Bairro *</label>
+                            <input type="text" id="bairro" name="bairro" required placeholder="Ex: São Pedro" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="rua" class="block text-sm text-gray-700 mb-1">Rua *</label>
+                            <input type="text" id="rua" name="rua" required placeholder="Ex: Av. Sebastião Rodrigues da Costa" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="numero" class="block text-sm text-gray-700 mb-1">Número *</label>
+                            <input type="text" id="numero" name="numero" required placeholder="Ex: S/N" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contato e Registro -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Contato e Registro</h3>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="telefone_fax" class="block text-sm text-gray-700 mb-1">Telefone/Fax *</label>
+                            <input type="text" id="telefone_fax" name="telefone_fax" required placeholder="Ex: (81) 3726-1024" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="email_contato" class="block text-sm text-gray-700 mb-1">E-mail de contato *</label>
+                            <input type="email" id="email_contato" name="email_contato" required placeholder="Ex: campus@ifpe.edu.br" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="ato_legal" class="block text-sm text-gray-700 mb-1">Ato Legal de Criação *</label>
+                            <input type="text" id="ato_legal" name="ato_legal" required placeholder="Ex: Lei nº 11.892, de 29/12/2008" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="sitio" class="block text-sm text-gray-700 mb-1">Sítio (Website) *</label>
+                            <input type="url" id="sitio" name="sitio" required placeholder="Ex: https://www.ifpe.edu.br/campus/belojardim" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <hr class="border-gray-400 my-10">
+
+        <!-- ============================================ -->
+        <!-- Card 2: Informações do Curso                -->
+        <!-- ============================================ -->
+        <section id="card-2" class="mb-8 bg-white border border-gray-200 rounded-lg p-6">
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">Informações do Curso</h2>
+                <p class="text-sm text-gray-500 mt-1">Preencha os dados detalhados do curso proposto.</p>
+            </div>
+
+            <form id="form-curso">
+
+                <!-- Dados Básicos do Curso -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Dados Básicos do Curso</h3>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="tipo_curso" class="block text-sm text-gray-700 mb-1">Tipo do Curso *</label>
+                            <select id="tipo_curso" name="tipo_curso" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
                                 <option value="">Selecione...</option>
-                                <option value="Presencial">Presencial</option>
+                                <option value="Bacharelado" selected>Bacharelado</option>
+                                <option value="Licenciatura">Licenciatura</option>
+                                <option value="Tecnólogo">Tecnólogo</option>
+                                <option value="Técnico Integrado">Técnico Integrado</option>
+                                <option value="Técnico Subsequente">Técnico Subsequente</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="nome_curso" class="block text-sm text-gray-700 mb-1">Nome do Curso *</label>
+                            <input type="text" id="nome_curso" name="nome_curso" required placeholder="Ex: Engenharia de Software" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="eixo_tecnologico" class="block text-sm text-gray-700 mb-1">Eixo Tecnológico *</label>
+                            <input type="text" id="eixo_tecnologico" name="eixo_tecnologico" required placeholder="Ex: Informação e Comunicação" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="modalidade_curso" class="block text-sm text-gray-700 mb-1">Modalidade *</label>
+                            <select id="modalidade_curso" name="modalidade_curso" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
+                                <option value="">Selecione...</option>
+                                <option value="Presencial" selected>Presencial</option>
                                 <option value="EaD">EaD</option>
                                 <option value="Híbrida">Híbrida</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="class_duration_minutes">Duração da Aula (minutos) *</label>
-                            <input type="number" id="class_duration_minutes" name="class_duration_minutes" required min="30" max="120" value="45">
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Carga Horária</legend>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="total_workload_clock_hours">Carga Horária Total (h/r) *</label>
-                            <input type="number" id="total_workload_clock_hours" name="total_workload_clock_hours" required min="1000" value="3205">
-                            <small>Deve ser exatamente 3205 h/r</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="total_workload_class_hours">Carga Horária em Aula (h/a) *</label>
-                            <input type="number" id="total_workload_class_hours" name="total_workload_class_hours" required>
-                        </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="complementary_activities_hours">Horas de Atividades Complementares (h/r) *</label>
-                            <input type="number" id="complementary_activities_hours" name="complementary_activities_hours" required min="0" value="200">
-                        </div>
-                        <div class="form-group">
-                            <label for="extension_activities_hours">Horas de Extensão (h/r) *</label>
-                            <input type="number" id="extension_activities_hours" name="extension_activities_hours" required min="0" value="320.5">
-                            <small>Deve ser 10% da carga total (320.5 h/r)</small>
-                        </div>
+                    <div>
+                        <label for="titulacao" class="block text-sm text-gray-700 mb-1">Titulação *</label>
+                        <input type="text" id="titulacao" name="titulacao" required placeholder="Ex: Bacharel em Engenharia de Software" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                     </div>
-                </fieldset>
+                </div>
 
-                <fieldset>
-                    <legend>Duração e Regime de Matrícula</legend>
+                <!-- Carga Horária e Duração -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Carga Horária e Duração</h3>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="min_completion_semesters">Duração Mínima (semestres) *</label>
-                            <input type="number" id="min_completion_semesters" name="min_completion_semesters" required min="1" max="20" value="8">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="ch_estagio" class="block text-sm text-gray-700 mb-1">CH Estágio Supervisionado (H/R) *</label>
+                            <input type="number" id="ch_estagio" name="ch_estagio" required min="0" placeholder="Ex: 200" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         </div>
-                        <div class="form-group">
-                            <label for="max_completion_semesters">Duração Máxima (semestres) *</label>
-                            <input type="number" id="max_completion_semesters" name="max_completion_semesters" required min="1" max="20" value="16">
+                        <div>
+                            <label for="semanas_letivas" class="block text-sm text-gray-700 mb-1">Número de Semanas Letivas *</label>
+                            <input type="number" id="semanas_letivas" name="semanas_letivas" required min="10" max="26" value="20" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="enrollment_regime">Regime de Matrícula *</label>
-                            <select id="enrollment_regime" name="enrollment_regime" required>
+                    <div class="mb-4">
+                        <label for="atividades_complementares" class="block text-sm text-gray-700 mb-1">Atividades Complementares (H/R) *</label>
+                        <input type="number" id="atividades_complementares" name="atividades_complementares" required min="0" placeholder="Ex: 200" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="integralizacao_min_semestres" class="block text-sm text-gray-700 mb-1">Integralização Mínima (semestres) *</label>
+                            <input type="number" id="integralizacao_min_semestres" name="integralizacao_min_semestres" required min="1" max="20" value="8" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="integralizacao_min_anos" class="block text-sm text-gray-700 mb-1">Integralização Mínima (anos) *</label>
+                            <input type="number" id="integralizacao_min_anos" name="integralizacao_min_anos" required min="1" max="10" value="4" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="integralizacao_max_semestres" class="block text-sm text-gray-700 mb-1">Integralização Máxima (semestres) *</label>
+                            <input type="number" id="integralizacao_max_semestres" name="integralizacao_max_semestres" required min="1" max="20" value="16" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="integralizacao_max_anos" class="block text-sm text-gray-700 mb-1">Integralização Máxima (anos) *</label>
+                            <input type="number" id="integralizacao_max_anos" name="integralizacao_max_anos" required min="1" max="10" value="8" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Oferta do Curso -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Oferta do Curso</h3>
+
+                    <div class="mb-4">
+                        <label for="formas_acesso" class="block text-sm text-gray-700 mb-1">Formas de Acesso *</label>
+                        <input type="text" id="formas_acesso" name="formas_acesso" required placeholder="Ex: Processo de seleção ENEM/SiSU" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="pre_requisito_ingresso" class="block text-sm text-gray-700 mb-1">Pré-requisito para Ingresso</label>
+                        <textarea id="pre_requisito_ingresso" name="pre_requisito_ingresso" rows="3" placeholder="Ex: Ensino Médio Completo" class="w-full border border-gray-300 rounded px-3 py-2 text-sm"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="regime" class="block text-sm text-gray-700 mb-1">Regime *</label>
+                            <select id="regime" name="regime" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
                                 <option value="">Selecione...</option>
-                                <option value="Semestral">Semestral</option>
-                                <option value="Anual">Anual</option>
-                                <option value="Modular">Modular</option>
+                                <option value="Integral" selected>Integral</option>
+                                <option value="Parcial">Parcial</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="weeks_per_semester">Semanas por Semestre *</label>
-                            <input type="number" id="weeks_per_semester" name="weeks_per_semester" required min="10" max="26" value="20">
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Acesso e Vagas</legend>
-
-                    <div class="form-group">
-                        <label for="access_form">Forma de Acesso *</label>
-                        <input type="text" id="access_form" name="access_form" required placeholder="Ex: Processo de seleção ENEM">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="admission_requirement">Pré-requisito de Admissão</label>
-                        <textarea id="admission_requirement" name="admission_requirement" rows="3" placeholder="Ex: Ensino Médio Completo"></textarea>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="annual_vacancies">Vagas por Ano *</label>
-                            <input type="number" id="annual_vacancies" name="annual_vacancies" required min="1" value="60">
-                        </div>
-                        <div class="form-group">
-                            <label for="vacancies_per_shift">Vagas por Turno *</label>
-                            <input type="number" id="vacancies_per_shift" name="vacancies_per_shift" required min="1" value="30">
-                        </div>
-                        <div class="form-group">
-                            <label for="shift">Turno *</label>
-                            <select id="shift" name="shift" required>
+                        <div>
+                            <label for="turnos" class="block text-sm text-gray-700 mb-1">Turnos *</label>
+                            <select id="turnos" name="turnos" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
                                 <option value="">Selecione...</option>
                                 <option value="Matutino">Matutino</option>
                                 <option value="Vespertino">Vespertino</option>
@@ -173,207 +256,258 @@
                             </select>
                         </div>
                     </div>
-                </fieldset>
 
-                <fieldset>
-                    <legend>Status e Indicadores</legend>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label for="num_turmas" class="block text-sm text-gray-700 mb-1">Nº de Turmas por Turno *</label>
+                            <input type="number" id="num_turmas" name="num_turmas" required min="1" placeholder="Ex: 1" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="vagas_turno" class="block text-sm text-gray-700 mb-1">Vagas por Turno *</label>
+                            <input type="number" id="vagas_turno" name="vagas_turno" required min="1" placeholder="Ex: 30" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="vagas_semestre" class="block text-sm text-gray-700 mb-1">Vagas por Semestre *</label>
+                            <input type="number" id="vagas_semestre" name="vagas_semestre" required min="1" placeholder="Ex: 30" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
 
-                    <div class="form-group">
-                        <label for="course_status">Status do Curso *</label>
-                        <select id="course_status" name="course_status" required>
+        <hr class="border-gray-400 my-10">
+
+        <!-- ============================================ -->
+        <!-- Card 3: Situação do Curso                   -->
+        <!-- ============================================ -->
+        <section id="card-3" class="mb-8 bg-white border border-gray-200 rounded-lg p-6">
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">Situação do Curso</h2>
+                <p class="text-sm text-gray-500 mt-1">Informe os indicadores e a situação atual do curso.</p>
+            </div>
+
+            <form id="form-situacao">
+
+                <!-- Indicadores de Avaliação -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Indicadores de Avaliação</h3>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="conceito_cc" class="block text-sm text-gray-700 mb-1">Conceito de Curso (CC)</label>
+                            <input type="text" id="conceito_cc" name="conceito_cc" placeholder="Ex: 4" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="conceito_cpc" class="block text-sm text-gray-700 mb-1">Conceito Preliminar de Curso (CPC)</label>
+                            <input type="text" id="conceito_cpc" name="conceito_cpc" placeholder="Ex: 3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="conceito_enade" class="block text-sm text-gray-700 mb-1">Conceito Enade</label>
+                            <input type="text" id="conceito_enade" name="conceito_enade" placeholder="Ex: 4" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="igc" class="block text-sm text-gray-700 mb-1">Índice Geral de Cursos (IGC)</label>
+                            <input type="text" id="igc" name="igc" placeholder="Ex: 3" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Status</h3>
+
+                    <div class="mb-4">
+                        <label for="situacao_curso" class="block text-sm text-gray-700 mb-1">Situação do Curso *</label>
+                        <select id="situacao_curso" name="situacao_curso" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
                             <option value="">Selecione...</option>
-                            <option value="Awaiting Authorization">Aguardando Autorização</option>
-                            <option value="Authorized">Autorizado</option>
-                            <option value="Awaiting MEC Recognition">Aguardando Reconhecimento MEC</option>
-                            <option value="Recognized by MEC">Reconhecido pelo MEC</option>
-                            <option value="Awaiting Renewal">Aguardando Renovação</option>
+                            <option value="Apresentação Inicial do PPC" selected>Apresentação Inicial do PPC</option>
+                            <option value="Reformulação do PPC">Reformulação do PPC</option>
+                            <option value="Reconhecimento">Reconhecimento</option>
+                            <option value="Renovação de Reconhecimento">Renovação de Reconhecimento</option>
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="reformulation_type">Tipo de Reformulação *</label>
-                        <select id="reformulation_type" name="reformulation_type" required>
+                    <div>
+                        <label for="status_curso" class="block text-sm text-gray-700 mb-1">Status do Curso *</label>
+                        <select id="status_curso" name="status_curso" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
                             <option value="">Selecione...</option>
-                            <option value="Initial">Inicial</option>
-                            <option value="Partial">Parcial</option>
-                            <option value="Full">Total</option>
+                            <option value="Aguardando autorização do conselho superior" selected>Aguardando autorização do conselho superior</option>
+                            <option value="Autorizado pelo conselho superior">Autorizado pelo conselho superior</option>
+                            <option value="Em funcionamento">Em funcionamento</option>
+                            <option value="Aguardando reconhecimento do MEC">Aguardando reconhecimento do MEC</option>
+                            <option value="Reconhecido pelo MEC">Reconhecido pelo MEC</option>
                         </select>
                     </div>
-                </fieldset>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Dados Gerais</button>
-                    <button type="reset" class="btn btn-secondary">Limpar</button>
                 </div>
             </form>
-        </div>
+        </section>
 
-        <!-- Tab 2: Currículo -->
-        <div id="tab-2" class="tab-content">
-            <div class="tab-header">
-                <h2>2. Currículo e Disciplinas</h2>
-                <p class="description">Gerencie as disciplinas do curso.</p>
+        <hr class="border-gray-400 my-10">
+
+        <!-- ============================================ -->
+        <!-- Card 4: Componentes Curriculares            -->
+        <!-- ============================================ -->
+        <section id="card-4" class="mb-8 bg-white border border-gray-200 rounded-lg p-6">
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold text-gray-900">Informações dos Componentes Curriculares</h2>
+                <p class="text-sm text-gray-500 mt-1">Cadastre as disciplinas que compõem a grade curricular do curso.</p>
             </div>
-            <p class="placeholder">Formulário de currículo será implementado aqui.</p>
-        </div>
 
-        <!-- Tab 3: Instituição -->
-        <div id="tab-3" class="tab-content">
-            <div class="tab-header">
-                <h2>3. Identificação da Instituição</h2>
-                <p class="description">Preencha os dados da equipe institucional e comissão do PPC.</p>
+            <!-- Componentes Cadastrados -->
+            <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                <h3 class="text-base font-medium text-gray-800 mb-4">Componentes Cadastrados</h3>
+                <div class="overflow-x-auto">
+                    <table id="tabela-componentes" class="w-full text-sm text-left">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="py-2 px-3 text-gray-600 font-medium">Código</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">Componentes Curriculares</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">Tipo</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">Período</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">Créditos</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">CH Total</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">H. Práticas</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">H. Teóricas</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">Pré-requisitos</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">Correquisitos</th>
+                                <th class="py-2 px-3 text-gray-600 font-medium">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="componentes-body">
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-gray-400 mt-4" id="table-empty-msg">Nenhum componente curricular cadastrado. Utilize o formulário abaixo para adicionar.</p>
             </div>
-            <form id="form-instituicao" class="form">
-                <fieldset>
-                    <legend>Equipe Institucional</legend>
 
-                    <div class="authority-group">
-                        <h3>Gestão Institucional</h3>
+            <form id="form-componente">
 
-                        <div class="form-group">
-                            <label for="reitor_name">Reitor/Reitora *</label>
-                            <input type="text" id="reitor_name" name="reitor_name" required placeholder="Nome completo">
+                <!-- Adicionar Componente -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Adicionar Componente Curricular</h3>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label for="comp_codigo" class="block text-sm text-gray-700 mb-1">Código *</label>
+                            <input type="text" id="comp_codigo" name="comp_codigo" required placeholder="Ex: ENG001" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="pro_reitor_ensino_name">Pró-Reitora/Pró-Reitor de Ensino *</label>
-                                <input type="text" id="pro_reitor_ensino_name" name="pro_reitor_ensino_name" required placeholder="Nome completo">
-                            </div>
-                            <div class="form-group">
-                                <label for="pro_reitor_pesquisa_name">Pró-Reitora/Pró-Reitor de Pesquisa</label>
-                                <input type="text" id="pro_reitor_pesquisa_name" name="pro_reitor_pesquisa_name" placeholder="Nome completo">
-                            </div>
+                        <div class="col-span-2">
+                            <label for="comp_nome" class="block text-sm text-gray-700 mb-1">Nome do Componente Curricular *</label>
+                            <input type="text" id="comp_nome" name="comp_nome" required placeholder="Ex: Cálculo Diferencial e Integral I" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         </div>
+                    </div>
+                </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="pro_reitor_extensao_name">Pró-Reitora/Pró-Reitor de Extensão</label>
-                                <input type="text" id="pro_reitor_extensao_name" name="pro_reitor_extensao_name" placeholder="Nome completo">
-                            </div>
-                            <div class="form-group">
-                                <label for="pro_reitor_desenvolvimento_name">Pró-Reitora/Pró-Reitor de Desenvolvimento Institucional</label>
-                                <input type="text" id="pro_reitor_desenvolvimento_name" name="pro_reitor_desenvolvimento_name" placeholder="Nome completo">
-                            </div>
+                <!-- Créditos -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Créditos</h3>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label for="creditos_praticas" class="block text-sm text-gray-700 mb-1">Aulas Práticas</label>
+                            <input type="number" id="creditos_praticas" name="creditos_praticas" min="0" value="0" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                         </div>
+                        <div>
+                            <label for="creditos_teoricas" class="block text-sm text-gray-700 mb-1">Aulas Teóricas</label>
+                            <input type="number" id="creditos_teoricas" name="creditos_teoricas" min="0" value="0" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="creditos_extensao" class="block text-sm text-gray-700 mb-1">Extensão</label>
+                            <input type="number" id="creditos_extensao" name="creditos_extensao" min="0" value="0" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="pro_reitor_administracao_name">Pró-Reitora/Pró-Reitor de Administração</label>
-                                <input type="text" id="pro_reitor_administracao_name" name="pro_reitor_administracao_name" placeholder="Nome completo">
-                            </div>
+                <!-- Total de Horas -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Total de Horas</h3>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label for="horas_praticas" class="block text-sm text-gray-700 mb-1">Horas Práticas</label>
+                            <input type="number" id="horas_praticas" name="horas_praticas" min="0" value="0" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="horas_teoricas" class="block text-sm text-gray-700 mb-1">Horas Teóricas</label>
+                            <input type="number" id="horas_teoricas" name="horas_teoricas" min="0" value="0" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="horas_extensao" class="block text-sm text-gray-700 mb-1">Horas Extensão</label>
+                            <input type="number" id="horas_extensao" name="horas_extensao" min="0" value="0" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Classificação e Requisitos -->
+                <div class="bg-white border border-gray-200 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 mb-4">Classificação e Requisitos</h3>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="comp_tipo" class="block text-sm text-gray-700 mb-1">Tipo *</label>
+                            <select id="comp_tipo" name="comp_tipo" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
+                                <option value="Obrigatória" selected>Obrigatória</option>
+                                <option value="Optativa">Optativa</option>
+                                <option value="Eletiva">Eletiva</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="comp_periodo" class="block text-sm text-gray-700 mb-1">Período *</label>
+                            <select id="comp_periodo" name="comp_periodo" required class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
+                                <option value="">Selecione...</option>
+                                <option value="1">1º Período</option>
+                                <option value="2">2º Período</option>
+                                <option value="3">3º Período</option>
+                                <option value="4">4º Período</option>
+                                <option value="5">5º Período</option>
+                                <option value="6">6º Período</option>
+                                <option value="7">7º Período</option>
+                                <option value="8">8º Período</option>
+                                <option value="9">9º Período</option>
+                                <option value="10">10º Período</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="authority-group">
-                        <h3>Campus Belo Jardim</h3>
-
-                        <div class="form-group">
-                            <label for="diretor_geral_name">Diretor/Diretora Geral do Campus *</label>
-                            <input type="text" id="diretor_geral_name" name="diretor_geral_name" required placeholder="Nome completo">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="pre_requisitos" class="block text-sm text-gray-700 mb-1">Pré-requisitos</label>
+                            <select id="pre_requisitos" name="pre_requisitos" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
+                                <option value="">Nenhum</option>
+                            </select>
                         </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="diretor_admin_name">Diretor/Diretora de Administração e Planejamento</label>
-                                <input type="text" id="diretor_admin_name" name="diretor_admin_name" placeholder="Nome completo">
-                            </div>
-                            <div class="form-group">
-                                <label for="diretor_desenvolvimento_name">Diretor/Diretora de Desenvolvimento Educacional</label>
-                                <input type="text" id="diretor_desenvolvimento_name" name="diretor_desenvolvimento_name" placeholder="Nome completo">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="chefe_deac_name">Chefe/Chefa da DEAC *</label>
-                                <input type="text" id="chefe_deac_name" name="chefe_deac_name" required placeholder="Nome completo">
-                            </div>
-                            <div class="form-group">
-                                <label for="coordenador_academico_name">Coordenador/Coordenadora Acadêmica</label>
-                                <input type="text" id="coordenador_academico_name" name="coordenador_academico_name" placeholder="Nome completo">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="coordenador_extensao_name">Coordenador/Coordenadora de Extensão</label>
-                                <input type="text" id="coordenador_extensao_name" name="coordenador_extensao_name" placeholder="Nome completo">
-                            </div>
-                            <div class="form-group">
-                                <label for="coordenador_pesquisa_name">Coordenador/Coordenadora de Pesquisa</label>
-                                <input type="text" id="coordenador_pesquisa_name" name="coordenador_pesquisa_name" placeholder="Nome completo">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="bibliotecario_name">Bibliotecário/Bibliotecária</label>
-                            <input type="text" id="bibliotecario_name" name="bibliotecario_name" placeholder="Nome completo">
+                        <div>
+                            <label for="correquisitos" class="block text-sm text-gray-700 mb-1">Correquisitos</label>
+                            <select id="correquisitos" name="correquisitos" class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white">
+                                <option value="">Nenhum</option>
+                            </select>
                         </div>
                     </div>
+                </div>
 
-                    <div class="authority-group">
-                        <h3>Coordenação do Curso</h3>
-
-                        <div class="form-group">
-                            <label for="coordenador_curso_name">Coordenador/Coordenadora do Curso *</label>
-                            <input type="text" id="coordenador_curso_name" name="coordenador_curso_name" required placeholder="Nome completo">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="assessor_pedagogico_name">Assessor/Assessora Pedagógica</label>
-                            <input type="text" id="assessor_pedagogico_name" name="assessor_pedagogico_name" placeholder="Nome completo">
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Comissão Elaboradora do PPC</legend>
-
-                    <div class="form-group">
-                        <label for="num_members">Número de Membros da Comissão *</label>
-                        <input type="number" id="num_members" name="num_members" required min="1" max="20" placeholder="Ex: 5">
-                    </div>
-
-                    <div id="commission-members" class="commission-members-container">
-                        <!-- Os membros serão adicionados dinamicamente -->
-                    </div>
-
-                    <div class="form-note">
-                        <p><strong>Nota:</strong> Após indicar o número de membros, serão exibidos campos para adicionar o nome e portaria de cada membro.</p>
-                    </div>
-                </fieldset>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Dados da Instituição</button>
-                    <button type="reset" class="btn btn-secondary">Limpar</button>
+                <!-- Actions -->
+                <div class="flex gap-3">
+                    <button type="submit" id="btn-adicionar" class="bg-blue-700 text-white px-4 py-2 rounded text-sm hover:bg-blue-800 transition-colors">Adicionar</button>
+                    <button type="reset" class="border border-gray-300 text-gray-600 px-4 py-2 rounded text-sm hover:bg-gray-100 transition-colors">Limpar Formulário</button>
                 </div>
             </form>
+        </section>
+
+        <!-- Submit Button -->
+        <div class="mt-10 text-center">
+            <button type="submit" class="bg-blue-700 text-white px-8 py-3 rounded text-base font-medium hover:bg-blue-800 transition-colors">
+                Enviar PPC
+            </button>
         </div>
 
-        <!-- Tab 4: Coordenador -->
-        <div id="tab-4" class="tab-content">
-            <div class="tab-header">
-                <h2>4. Perfil do Coordenador</h2>
-                <p class="description">Informações sobre o coordenador do curso.</p>
-            </div>
-            <p class="placeholder">Formulário do coordenador será implementado aqui.</p>
-        </div>
-
-        <!-- Tab 5: Infraestrutura -->
-        <div id="tab-5" class="tab-content">
-            <div class="tab-header">
-                <h2>5. Infraestrutura</h2>
-                <p class="description">Inventário de salas, laboratórios e equipamentos.</p>
-            </div>
-            <p class="placeholder">Formulário de infraestrutura será implementado aqui.</p>
-        </div>
-
-        <footer class="footer">
-            <p>&copy; 2024 IFPE - Campus Belo Jardim. Sistema de Geração de PPC.</p>
+        <!-- Footer -->
+        <footer class="text-center text-xs text-gray-400 mt-8 pb-4 border-t border-gray-200 pt-6">
+            <p>&copy; 2026 IFPE - Campus Belo Jardim. Sistema de Geração de PPC.</p>
         </footer>
     </div>
 
-    <script src="frontend/js/tabs.js"></script>
 </body>
 </html>
