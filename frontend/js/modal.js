@@ -8,8 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Intercepta todos os eventos de reset na página
     document.addEventListener('reset', (e) => {
-        // Se a limpeza foi confirmada no modal, não intercepta
-        if (isConfirming) return;
+        // Se a limpeza foi chamada via script, ou confirmada no modal, não intercepta
+        if (!e.isTrusted || isConfirming) return;
 
         // Previne a limpeza padrão e mostra o modal
         e.preventDefault();
