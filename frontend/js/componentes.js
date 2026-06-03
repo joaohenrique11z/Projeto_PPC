@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let componentes = [];
     let editIndex = -1;
+    let componenteToRemoveIndex = -1;
+
+    const modalRemover = document.getElementById('modal-remover-componente');
+    const btnCancelarRemover = document.getElementById('btn-cancelar-remover');
+    const btnConfirmarRemover = document.getElementById('btn-confirmar-remover');
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -207,31 +212,43 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.removerComponente = (index) => {
-        if (confirm('Tem certeza que deseja remover este componente?')) {
-            const compRemovido = componentes[index];
-            
-            // Bloqueia a remoção se ele for pré-requisito de outro componente
-            const usadoComoPre = componentes.some(c => c.preReq === compRemovido.codigo);
-            const usadoComoCo = componentes.some(c => c.coReq === compRemovido.codigo);
-            
-            if (usadoComoPre || usadoComoCo) {
-                alert('Não é possível remover este componente pois ele é requisito para outro(s) na grade.');
-                return;
-            }
+        const compRemovido = componentes[index];
+        
+        // Bloqueia a remoção se ele for pré-requisito de outro componente
+        const usadoComoPre = componentes.some(c => c.preReq === compRemovido.codigo);
+        const usadoComoCo = componentes.some(c => c.coReq === compRemovido.codigo);
+        
+        if (usadoComoPre || usadoComoCo) {
+            alert('Não é possível remover este componente pois ele é requisito para outro(s) na grade.');
+            return;
+        }
 
-            componentes.splice(index, 1);
+        componenteToRemoveIndex = index;
+        modalRemover.classList.remove('hidden');
+    };
 
-            if (editIndex === index) {
+    btnCancelarRemover.addEventListener('click', () => {
+        modalRemover.classList.add('hidden');
+        componenteToRemoveIndex = -1;
+    });
+
+    btnConfirmarRemover.addEventListener('click', () => {
+        if (componenteToRemoveIndex > -1) {
+            componentes.splice(componenteToRemoveIndex, 1);
+
+            if (editIndex === componenteToRemoveIndex) {
                 // Cancel edit mode if editing the removed item
                 limparForm();
-            } else if (editIndex > index) {
+            } else if (editIndex > componenteToRemoveIndex) {
                 editIndex--;
             }
 
             atualizarTabela();
             atualizarSelectsRequisitos();
         }
-    };
+        modalRemover.classList.add('hidden');
+        componenteToRemoveIndex = -1;
+    });
 
     function limparForm() {
         document.getElementById('comp_codigo').value = '';
