@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function atualizarTabela() {
-        tbody.innerHTML = '';
+        tbody.replaceChildren(); // Remove todos os filhos de forma segura
         
         if (componentes.length === 0) {
             emptyMsg.classList.remove('hidden');
@@ -95,24 +95,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tr = document.createElement('tr');
                 tr.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors';
                 
-                tr.innerHTML = `
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.codigo}</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200 font-medium">${comp.nome}</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.tipo}</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.periodo}º</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.totalCreditos}</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.totalHoras}h</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.hrPraticas}h</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.hrTeoricas}h</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.preReq || '-'}</td>
-                    <td class="py-3 px-3 text-gray-800 dark:text-gray-200">${comp.coReq || '-'}</td>
-                    <td class="py-3 px-3">
-                        <div class="flex gap-3">
-                            <button type="button" class="font-medium text-blue-600 dark:text-blue-400 hover:underline" onclick="editarComponente(${index})">Editar</button>
-                            <button type="button" class="font-medium text-red-600 dark:text-red-400 hover:underline" onclick="removerComponente(${index})">Remover</button>
-                        </div>
-                    </td>
-                `;
+                const colunas = [
+                    comp.codigo,
+                    comp.nome,
+                    comp.tipo,
+                    `${comp.periodo}º`,
+                    comp.totalCreditos,
+                    `${comp.totalHoras}h`,
+                    `${comp.hrPraticas}h`,
+                    `${comp.hrTeoricas}h`,
+                    comp.preReq || '-',
+                    comp.coReq || '-'
+                ];
+
+                colunas.forEach((texto, i) => {
+                    const td = document.createElement('td');
+                    td.className = i === 1 
+                        ? 'py-3 px-3 text-gray-800 dark:text-gray-200 font-medium' 
+                        : 'py-3 px-3 text-gray-800 dark:text-gray-200';
+                    td.textContent = texto; // Proteção contra XSS
+                    tr.appendChild(td);
+                });
+
+                // Coluna de Ações
+                const tdAcoes = document.createElement('td');
+                tdAcoes.className = 'py-3 px-3';
+                const divAcoes = document.createElement('div');
+                divAcoes.className = 'flex gap-3';
+
+                const btnEditar = document.createElement('button');
+                btnEditar.type = 'button';
+                btnEditar.className = 'font-medium text-blue-600 dark:text-blue-400 hover:underline';
+                btnEditar.textContent = 'Editar';
+                btnEditar.onclick = () => editarComponente(index);
+
+                const btnRemover = document.createElement('button');
+                btnRemover.type = 'button';
+                btnRemover.className = 'font-medium text-red-600 dark:text-red-400 hover:underline';
+                btnRemover.textContent = 'Remover';
+                btnRemover.onclick = () => removerComponente(index);
+
+                divAcoes.appendChild(btnEditar);
+                divAcoes.appendChild(btnRemover);
+                tdAcoes.appendChild(divAcoes);
+                tr.appendChild(tdAcoes);
+
                 tbody.appendChild(tr);
             });
         }
@@ -122,10 +149,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentValuePre = preRequisitosSelect.value;
         const currentValueCo = correquisitosSelect.value;
 
-        const optionsHTML = '<option value="">Nenhum</option>' + componentes.map(c => `<option value="${c.codigo}">${c.codigo} - ${c.nome}</option>`).join('');
-        
-        preRequisitosSelect.innerHTML = optionsHTML;
-        correquisitosSelect.innerHTML = optionsHTML;
+        preRequisitosSelect.replaceChildren();
+        correquisitosSelect.replaceChildren();
+
+        const addOption = (select, value, text) => {
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.textContent = text; // Proteção contra XSS
+            select.appendChild(opt);
+        };
+
+        addOption(preRequisitosSelect, '', 'Nenhum');
+        addOption(correquisitosSelect, '', 'Nenhum');
+
+        componentes.forEach(c => {
+            const texto = `${c.codigo} - ${c.nome}`;
+            addOption(preRequisitosSelect, c.codigo, texto);
+            addOption(correquisitosSelect, c.codigo, texto);
+        });
 
         // Tentar restaurar o valor anterior se ele ainda existir na lista
         if (componentes.some(c => c.codigo === currentValuePre)) {
