@@ -40,3 +40,8 @@ coverage/
 # Outros
 .cache/
 .temp/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
