@@ -39,6 +39,25 @@ A arquitetura do projeto adota uma abordagem limpa (*Vanilla*), priorizando alta
 
 ---
 
+## 📂 Estrutura do Projeto
+
+A organização de pastas segue um padrão direto para facilitar o desenvolvimento e entendimento do código:
+
+```text
+📦 projeto-ppc
+ ┣ 📂 frontend
+ ┃ ┣ 📂 js
+ ┃ ┃ ┣ 📜 cep.js           # Lógica de integração com ViaCEP
+ ┃ ┃ ┣ 📜 componentes.js   # CRUD dinâmico das disciplinas/tabelas
+ ┃ ┃ ┣ 📜 mask.js          # Formatação e máscaras para inputs
+ ┃ ┃ ┣ 📜 modal.js         # Gerenciamento de alertas e modais
+ ┃ ┃ ┗ 📜 theme.js         # Controle global do tema (Light/Dark)
+ ┃ ┗ 📜 index.html         # Estrutura principal da interface
+ ┗ 📜 README.md
+```
+
+---
+
 ## 🚀 Como Executar
 
 Esqueça comandos complexos. O frontend está pronto para rodar direto da caixa:
