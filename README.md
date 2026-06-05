@@ -1,6 +1,8 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-blue?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
 </div>
@@ -9,50 +11,53 @@
 
 <div align="center">
   <h1>📚 Gerador de Projeto Pedagógico de Curso (PPC)</h1>
-  <p><i>Uma ferramenta ágil, limpa e moderna para estruturação de diretrizes acadêmicas.</i></p>
+  <p><i>Automação do preenchimento e geração de PPCs para o IFPE Campus Belo Jardim.</i></p>
 </div>
 
 ---
 
 ## 🎯 Visão Geral
-O **Gerador de PPC** é uma plataforma desenvolvida para simplificar a criação e estruturação de Projetos Pedagógicos. Com um design focado na experiência do usuário e validações em tempo real, o sistema auxilia coordenadores e professores a preencherem os formulários e matrizes curriculares sem burocracia, garantindo que nenhum detalhe passe despercebido.
+
+O **Gerador de PPC** é um sistema web de uso interno desenvolvido para o **IFPE Campus Belo Jardim**, com o objetivo de automatizar a criação dos **Projetos Pedagógicos de Curso** — documentos obrigatórios exigidos pelo MEC para todos os cursos de nível superior.
+
+O sistema conduz coordenadores e professores por um assistente em abas (wizard), coletando todos os dados necessários: identificação do curso, matriz curricular, ementas, corpo docente, infraestrutura e equipe institucional. Ao final, o documento é gerado e exportado nos formatos **PDF/A** e **ODT**.
+
+O sistema roda **inteiramente em localhost**, sem necessidade de internet em tempo de execução e sem qualquer sistema de autenticação neste MVP.
 
 ---
 
-## ✨ Principais Funcionalidades
+## 🛠️ Tecnologias
 
-- 🌓 **Tema Dinâmico**: Alternância fluida e nativa entre *Light Mode* e *Dark Mode*.
-- ⚡ **Preenchimento Inteligente**: Busca automática de endereços, autocompletar e formatação visual para facilitar a digitação (Máscaras).
-- 🧩 **Gestão Curricular Dinâmica**: Adicione, edite ou remova componentes e disciplinas da grade de forma 100% interativa, com cálculo automático de horas.
-- 🛡️ **Foco na Estabilidade**: Prevenção contra perda acidental de dados e segurança reforçada na manipulação das tabelas.
-- 🚀 **Zero Setup**: O projeto roda nativamente no navegador, garantindo performance e portabilidade instantânea.
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-A arquitetura do projeto adota uma abordagem limpa (*Vanilla*), priorizando alta velocidade e fácil manutenção, sem curva de aprendizado complexa:
-
-- **HTML5**: Marcação semântica e acessível.
-- **JavaScript (Vanilla)**: Lógica de negócio, manipulação de estado e gerenciamento do DOM sem frameworks pesados.
-- **Tailwind CSS**: Estilização altamente customizável e responsiva via classes utilitárias.
+| Camada | Tecnologia |
+|---|---|
+| Backend | Python 3.13+, FastAPI |
+| Banco de Dados | Supabase (PostgreSQL) |
+| Frontend | HTML5, JavaScript (Vanilla), Tailwind CSS |
 
 ---
 
 ## 📂 Estrutura do Projeto
 
-A organização de pastas segue um padrão direto para facilitar o desenvolvimento e entendimento do código:
-
 ```text
-📦 projeto-ppc
+📦 Projeto_PPC
+ ┣ 📂 backend
+ ┃ ┣ 📂 models        # Modelos de dados (Pydantic)
+ ┃ ┣ 📂 routes        # Rotas da API REST (/api/...)
+ ┃ ┣ 📂 services      # Regras de negócio
+ ┃ ┣ 📜 database.py   # Conexão com o Supabase
+ ┃ ┣ 📜 main.py       # Ponto de entrada do FastAPI
+ ┃ ┗ 📜 requirements.txt
  ┣ 📂 frontend
  ┃ ┣ 📂 js
- ┃ ┃ ┣ 📜 cep.js           # Lógica de integração com ViaCEP
- ┃ ┃ ┣ 📜 componentes.js   # CRUD dinâmico das disciplinas/tabelas
- ┃ ┃ ┣ 📜 mask.js          # Formatação e máscaras para inputs
- ┃ ┃ ┣ 📜 modal.js         # Gerenciamento de alertas e modais
- ┃ ┃ ┗ 📜 theme.js         # Controle global do tema (Light/Dark)
- ┃ ┗ 📜 index.html         # Estrutura principal da interface
+ ┃ ┃ ┣ 📜 cep.js           # Integração com ViaCEP (busca de endereço)
+ ┃ ┃ ┣ 📜 componentes.js   # CRUD de componentes curriculares
+ ┃ ┃ ┣ 📜 crud.js          # CRUD de membros, docentes e infraestrutura
+ ┃ ┃ ┣ 📜 mask.js          # Máscaras e formatação de inputs
+ ┃ ┃ ┣ 📜 modal.js         # Controle de modais de confirmação
+ ┃ ┃ ┣ 📜 tabs.js          # Navegação entre abas do wizard
+ ┃ ┃ ┗ 📜 theme.js         # Alternância de tema (Light / Dark)
+ ┃ ┗ 📜 index.html         # Interface principal
+ ┣ 📂 templates            # Templates base para geração dos documentos
  ┗ 📜 README.md
 ```
 
@@ -60,20 +65,45 @@ A organização de pastas segue um padrão direto para facilitar o desenvolvimen
 
 ## 🚀 Como Executar
 
-Esqueça comandos complexos. O frontend está pronto para rodar direto da caixa:
+### Pré-requisitos
 
-1. Faça o clone deste repositório:
+- Python 3.13+
+- Uma instância do Supabase configurada (variáveis no `.env`)
+
+### Passos
+
+1. Clone o repositório:
    ```bash
-   git clone https://github.com/seu-usuario/projeto-ppc.git
+   git clone https://github.com/joaohenrique11z/Projeto_PPC.git
+   cd Projeto_PPC
    ```
-2. Entre na pasta do projeto:
+
+2. Crie e ative o ambiente virtual:
    ```bash
-   cd projeto-ppc
+   python -m venv venv
+   venv\Scripts\activate   # Windows
    ```
-3. Abra o arquivo `frontend/index.html` em qualquer navegador web moderno.
+
+3. Instale as dependências do backend:
+   ```bash
+   pip install -r backend/requirements.txt
+   ```
+
+4. Configure as variáveis de ambiente copiando o arquivo de exemplo:
+   ```bash
+   copy .env.example .env
+   # Edite o .env com as credenciais do Supabase
+   ```
+
+5. Inicie o servidor:
+   ```bash
+   uvicorn backend.main:app --reload
+   ```
+
+6. Abra `frontend/index.html` no navegador ou acesse `http://localhost:8000`.
 
 ---
 
 <div align="center">
-  <p>Desenvolvido para descomplicar e automatizar o planejamento acadêmico.</p>
+  <p>Desenvolvido para o <strong>IFPE Campus Belo Jardim</strong> — descomplicando o planejamento acadêmico.</p>
 </div>
