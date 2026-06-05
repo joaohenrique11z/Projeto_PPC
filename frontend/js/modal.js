@@ -4,17 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnConfirmar = document.getElementById('btn-confirmar-limpar');
     
     let formToReset = null;
-    let isConfirming = false;
 
-    // Intercepta todos os eventos de reset na página
-    document.addEventListener('reset', (e) => {
-        // Se a limpeza foi chamada via script, ou confirmada no modal, não intercepta
-        if (!e.isTrusted || isConfirming) return;
-
-        // Previne a limpeza padrão e mostra o modal
-        e.preventDefault();
-        formToReset = e.target;
-        modalLimpar.classList.remove('hidden');
+    // Intercepta cliques nos botões de reset
+    document.querySelectorAll('button[type="reset"]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            formToReset = btn.closest('form');
+            if (formToReset) {
+                modalLimpar.classList.remove('hidden');
+            }
+        });
     });
 
     // Ação ao clicar em Cancelar
@@ -26,9 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ação ao clicar em Limpar Dados (Confirmar)
     btnConfirmar.addEventListener('click', () => {
         if (formToReset) {
-            isConfirming = true; // Sinaliza que é uma limpeza confirmada para não abrir o modal novamente
             formToReset.reset(); // Executa a limpeza
-            isConfirming = false;
         }
         
         modalLimpar.classList.add('hidden');
