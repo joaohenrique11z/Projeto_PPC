@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPC - Plano Pedagógico de Curso</title>
+    <meta name="description" content="Sistema de geração do Plano Pedagógico de Curso (PPC) do IFPE - Campus Belo Jardim.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/tailwind.config.js"></script>
+    <style>
+        /* ── Painel de conteúdo ── */
+        .tab-panel            { display: none; }
+        .tab-panel.active     { display: block; }
+
+        /* ── Sidebar fixa em desktop, deslizante em mobile ── */
+        @media (max-width: 767px) {
+            #ppc-sidebar {
+                position: fixed;
+                top: 0; left: 0; bottom: 0;
+                z-index: 40;
+                width: 16rem;   /* 256 px */
+                transition: transform 0.25s ease, opacity 0.25s ease;
+            }
+            #ppc-sidebar.-translate-x-full {
+                transform: translateX(-100%);
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        /* ── Scrollbar fina na sidebar ── */
+        #ppc-sidebar nav::-webkit-scrollbar { width: 4px; }
+        #ppc-sidebar nav::-webkit-scrollbar-track { background: transparent; }
+        #ppc-sidebar nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark #ppc-sidebar nav::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* ── Área de conteúdo: scroll independente ── */
+        #ppc-content { min-height: 0; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-950 dark:text-white min-h-screen">
+
+<!-- ================================================================== -->
+<!-- HEADER GLOBAL                                                        -->
+<!-- ================================================================== -->
+<header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30">
+    <div class="max-w-screen-xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+
+        <!-- Botão mobile: abre sidebar -->
+        <button type="button" id="btn-mobile-menu"
+            aria-label="Abrir menu de navegação" aria-expanded="false"
+            class="md:hidden p-2 rounded text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+
+        <!-- Logo / Título -->
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+            <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+            </div>
+            <div class="min-w-0">
+                <h1 class="text-sm font-bold text-gray-900 dark:text-white leading-tight truncate">
+                    Gerador de PPC
+                </h1>
+                <p class="text-xs text-gray-400 dark:text-gray-500 leading-tight hidden sm:block">
+                    IFPE · Campus Belo Jardim
+                </p>
+            </div>
+        </div>
+
+        <!-- Aba ativa em mobile -->
+        <span id="sidebar-progress-label"
+            class="text-xs text-gray-500 dark:text-gray-400 hidden sm:inline-block">
+        </span>
+
+        <!-- Theme Toggle -->
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+            <span class="text-xs leading-none">☀️</span>
+            <button type="button" id="theme-toggle"
+                class="relative inline-flex h-5 w-9 items-center rounded-full bg-gray-300 dark:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <span class="sr-only">Alternar tema</span>
+                <span class="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform translate-x-0.5 dark:translate-x-5"></span>
+            </button>
+            <span class="text-xs leading-none">🌙</span>
+        </div>
+
+    </div>
+</header>
+
+<!-- ================================================================== -->
+<!-- OVERLAY MOBILE (fecha sidebar ao clicar fora)                       -->
+<!-- ================================================================== -->
+<div id="mobile-overlay"
+    class="hidden fixed inset-0 bg-black/50 z-30 md:hidden"
+    aria-hidden="true">
+</div>
+
+<!-- ================================================================== -->
+<!-- LAYOUT PRINCIPAL: SIDEBAR + CONTEÚDO                                -->
+<!-- ================================================================== -->
+<div class="max-w-screen-xl mx-auto flex min-h-[calc(100vh-3.5rem)]">
+
+    <!-- ============================================================== -->
+    <!-- SIDEBAR (Abas Laterais)                                         -->
+    <!-- ============================================================== -->
+    <aside id="ppc-sidebar"
+        class="-translate-x-full md:translate-x-0 opacity-0 md:opacity-100
+               w-64 flex-shrink-0
+               bg-white dark:bg-gray-900
+               border-r border-gray-200 dark:border-gray-700
+               flex flex-col
+               md:sticky md:top-14 md:h-[calc(100vh-3.5rem)]"
+        aria-label="Navegação do PPC">
+
+        <!-- Título da sidebar -->
+        <div class="px-4 pt-5 pb-3 border-b border-gray-100 dark:border-gray-800">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+                Seções do Formulário
+            </p>
+        </div>
+
+        <!-- Lista de abas (scrollável) -->
+        <nav class="flex-1 overflow-y-auto py-2" role="tablist" aria-orientation="vertical" aria-label="Seções do PPC">
+
+            <!-- 1. Dados Institucionais -->
+            <button type="button" role="tab" id="btn-tab-institucional"
+                aria-selected="true" aria-controls="tab-institucional"
+                data-tab="institucional"
+                class="tab-btn w-full text-left flex items-center gap-3 px-4 py-3 text-sm border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                <svg class="w-4 h-4 flex-shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <span>Dados Institucionais</span>
+            </button>
+
+            <!-- 2. Estrutura do Curso -->
+            <button type="button" role="tab" id="btn-tab-curso"
+                aria-selected="false" aria-controls="tab-curso"
+                data-tab="curso"
+                class="tab-btn w-full text-left flex items-center gap-3 px-4 py-3 text-sm border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                <svg class="w-4 h-4 flex-shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                <span>Estrutura do Curso</span>
+            </button>
+
+            <!-- 3. Situação e Avaliação -->
+            <button type="button" role="tab" id="btn-tab-situacao"
+                aria-selected="false" aria-controls="tab-situacao"
+                data-tab="situacao"
+                class="tab-btn w-full text-left flex items-center gap-3 px-4 py-3 text-sm border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                <svg class="w-4 h-4 flex-shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <span>Situação e Avaliação</span>
+            </button>
+            
+            <!-- 4. Membros Institucionais -->
+            <button type="button" role="tab" id="btn-tab-membros"
+            aria-selected="false" aria-controls="tab-membros"
+            data-tab="membros"
+            class="tab-btn w-full text-left flex items-center gap-3 px-4 py-3 text-sm border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+            <svg class="w-4 h-4 flex-shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>Membros Institucionais</span>
+        </button>
+
+        <!-- 5. Componentes Curriculares -->
+        <button type="button" role="tab" id="btn-tab-componentes"
+            aria-selected="false" aria-controls="tab-componentes"
+            data-tab="componentes"
+            class="tab-btn w-full text-left flex items-center gap-3 px-4 py-3 text-sm border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+            <svg class="w-4 h-4 flex-shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+            </svg>
+            <span>Componentes Curriculares</span>
+        </button>
+        
+            <!-- 6. Corpo Docente -->
+            <button type="button" role="tab" id="btn-tab-corpo-docente"
+                aria-selected="false" aria-controls="tab-corpo-docente"
+                data-tab="corpo-docente"
+                class="tab-btn w-full text-left flex items-center gap-3 px-4 py-3 text-sm border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                <svg class="w-4 h-4 flex-shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span>Corpo Docente</span>
+            </button>
+
+            <!-- 7. Infraestrutura -->
+            <button type="button" role="tab" id="btn-tab-infraestrutura"
+                aria-selected="false" aria-controls="tab-infraestrutura"
+                data-tab="infraestrutura"
+                class="tab-btn w-full text-left flex items-center gap-3 px-4 py-3 text-sm border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                <svg class="w-4 h-4 flex-shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <span>Infraestrutura</span>
+            </button>
+
+        </nav>
+
+        <!-- Rodapé da sidebar: botão Enviar PPC -->
+        <div class="p-4 border-t border-gray-100 dark:border-gray-800">
+            <button type="button" id="btn-enviar-ppc"
+                class="w-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Enviar PPC
+            </button>
+        </div>
+    </aside>
+
+    <!-- ============================================================== -->
+    <!-- ÁREA DE CONTEÚDO                                                -->
+    <!-- ============================================================== -->
+    <main id="ppc-content" class="flex-1 overflow-y-auto">
+        <div class="px-6 py-8 max-w-4xl">
+
+            <!-- ======================================================== -->
+            <!-- TAB 1 — DADOS INSTITUCIONAIS                              -->
+            <!-- ======================================================== -->
+            <section id="tab-institucional" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-institucional">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Dados Institucionais</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Preencha os dados do campus proponente do curso.</p>
+                </div>
+
+                <form id="form-proponente" class="space-y-4">
+
+                    <!-- Identificação do Campus -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Identificação do Campus</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="campus_name" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome do Campus *</label>
+                                <select id="campus_name" name="campus_name" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Belo Jardim">Campus Belo Jardim</option>
+                                    <option value="Recife">Campus Recife</option>
+                                    <option value="Garanhuns">Campus Garanhuns</option>
+                                    <option value="Caruaru">Campus Caruaru</option>
+                                    <option value="Pesqueira">Campus Pesqueira</option>
+                                    <option value="Afogados">Campus Afogados da Ingazeira</option>
+                                    <option value="Barreiros">Campus Barreiros</option>
+                                    <option value="Vitória">Campus Vitória de Santo Antão</option>
+                                    <option value="Palmares">Campus Palmares</option>
+                                    <option value="Ipojuca">Campus Ipojuca</option>
+                                    <option value="Jaboatão">Campus Jaboatão dos Guararapes</option>
+                                    <option value="Paulista">Campus Paulista</option>
+                                    <option value="Cabo">Campus Cabo de Santo Agostinho</option>
+                                    <option value="Igarassu">Campus Igarassu</option>
+                                    <option value="Olinda">Campus Olinda</option>
+                                    <option value="Abreu e Lima">Campus Abreu e Lima</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="cnpj" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CNPJ *</label>
+                                <input type="text" id="cnpj" name="cnpj" required placeholder="Ex: 10.767.239/0001-45"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Endereço -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Endereço</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="cep" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CEP *</label>
+                                <div class="relative">
+                                    <input type="text" id="cep" name="cep" required placeholder="Ex: 55150-000"
+                                        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <div id="cep-loading" class="absolute inset-y-0 right-0 flex items-center pr-3 hidden">
+                                        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="cidade" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Cidade *</label>
+                                <input type="text" id="cidade" name="cidade" required placeholder="Ex: Belo Jardim"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label for="bairro" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Bairro *</label>
+                                <input type="text" id="bairro" name="bairro" required placeholder="Ex: São Pedro"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="rua" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Rua *</label>
+                                <input type="text" id="rua" name="rua" required placeholder="Ex: Av. Sebastião Rodrigues da Costa"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="numero" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Número *</label>
+                                <input type="text" id="numero" name="numero" required placeholder="Ex: S/N"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contato e Registro -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Contato e Registro</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="telefone_fax" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Telefone/Fax *</label>
+                                <input type="text" id="telefone_fax" name="telefone_fax" required placeholder="Ex: (81) 3726-1024"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="email_contato" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">E-mail de Contato *</label>
+                                <input type="email" id="email_contato" name="email_contato" required placeholder="Ex: campus@ifpe.edu.br"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="ato_legal" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Ato Legal de Criação *</label>
+                                <input type="text" id="ato_legal" name="ato_legal" required placeholder="Ex: Lei nº 11.892, de 29/12/2008"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="sitio_web" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Sítio (Website) *</label>
+                                <input type="url" id="sitio_web" name="sitio_web" required placeholder="Ex: https://www.ifpe.edu.br/campus/belojardim"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- TAB 2 — ESTRUTURA DO CURSO                                -->
+            <!-- ======================================================== -->
+            <section id="tab-curso" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-curso">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Estrutura do Curso</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Preencha os dados acadêmicos e operacionais do curso.</p>
+                </div>
+
+                <form id="form-curso" class="space-y-4">
+
+                    <!-- Identificação Acadêmica -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Identificação Acadêmica</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="nome_curso" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome do Curso *</label>
+                                <input type="text" id="nome_curso" name="nome_curso" required placeholder="Ex: Engenharia de Software"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="area_conhecimento" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Área do Conhecimento *</label>
+                                <input type="text" id="area_conhecimento" name="area_conhecimento" required placeholder="Ex: Ciências Exatas e da Terra"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="nivel" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nível *</label>
+                                <select id="nivel" name="nivel" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Graduação">Graduação</option>
+                                    <option value="Técnico">Técnico</option>
+                                    <option value="Pós-Graduação Lato Sensu">Pós-Graduação Lato Sensu</option>
+                                    <option value="Pós-Graduação Stricto Sensu">Pós-Graduação Stricto Sensu</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="tipo_curso" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Tipo do Curso *</label>
+                                <select id="tipo_curso" name="tipo_curso" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Bacharelado" selected>Bacharelado</option>
+                                    <option value="Licenciatura">Licenciatura</option>
+                                    <option value="Tecnólogo">Tecnólogo</option>
+                                    <option value="Técnico Integrado">Técnico Integrado</option>
+                                    <option value="Técnico Subsequente">Técnico Subsequente</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="modalidade_curso" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Modalidade *</label>
+                                <select id="modalidade_curso" name="modalidade_curso" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Presencial" selected>Presencial</option>
+                                    <option value="EaD">EaD</option>
+                                    <option value="Híbrida">Híbrida</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="eixo_tecnologico" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Eixo Tecnológico</label>
+                                <input type="text" id="eixo_tecnologico" name="eixo_tecnologico" placeholder="Ex: Informação e Comunicação"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="titulacao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Titulação Conferida *</label>
+                                <input type="text" id="titulacao" name="titulacao" required placeholder="Ex: Bacharel em Engenharia de Software"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Carga Horária -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Carga Horária</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="ch_total_relogio" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Total (H-Relógio) *</label>
+                                <input type="number" id="ch_total_relogio" name="ch_total_relogio" required min="0" placeholder="Ex: 3200"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="ch_total_aula" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Total (H-Aula) *</label>
+                                <input type="number" id="ch_total_aula" name="ch_total_aula" required min="0" placeholder="Ex: 3840"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="duracao_aula_minutos" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Duração da Aula (min) *</label>
+                                <input type="number" id="duracao_aula_minutos" name="duracao_aula_minutos" required min="30" max="90" placeholder="Ex: 50"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="atividades_complementares" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Atividades Complementares (H/R)</label>
+                                <input type="number" id="atividades_complementares" name="atividades_complementares" min="0" placeholder="Ex: 200"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="ch_extensao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Extensão (H/R)</label>
+                                <input type="number" id="ch_extensao" name="ch_extensao" min="0" placeholder="Ex: 330"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integralização e Calendário -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Integralização e Calendário</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="integralizacao_min_semestres" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Integralização Mínima (semestres) *</label>
+                                <input type="number" id="integralizacao_min_semestres" name="integralizacao_min_semestres" required min="1" max="20" value="8"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="integralizacao_max_semestres" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Integralização Máxima (semestres) *</label>
+                                <input type="number" id="integralizacao_max_semestres" name="integralizacao_max_semestres" required min="1" max="20" value="16"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="semanas_letivas" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Semanas Letivas *</label>
+                                <input type="number" id="semanas_letivas" name="semanas_letivas" required min="10" max="26" value="20"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="periodicidade_letiva" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Periodicidade Letiva *</label>
+                                <select id="periodicidade_letiva" name="periodicidade_letiva" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Semestral" selected>Semestral</option>
+                                    <option value="Anual">Anual</option>
+                                    <option value="Trimestral">Trimestral</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="inicio_curso" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Início do Curso</label>
+                                <input type="text" id="inicio_curso" name="inicio_curso" placeholder="Ex: 2024.1"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="matriz_curricular_alterada" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Matriz Curricular Alterada em</label>
+                            <input type="text" id="matriz_curricular_alterada" name="matriz_curricular_alterada" placeholder="Ex: 2022.2"
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Oferta e Acesso -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Oferta e Acesso</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="regime_matricula" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Regime de Matrícula *</label>
+                                <select id="regime_matricula" name="regime_matricula" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Seriado" selected>Seriado</option>
+                                    <option value="Por Crédito">Por Crédito</option>
+                                    <option value="Misto">Misto</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="formas_acesso" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Formas de Acesso *</label>
+                                <select id="formas_acesso" name="formas_acesso" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Ingresso Direto com a Nota do Enem">Ingresso Direto com a Nota do Enem</option>
+                                    <option value="Vestibular Tradicional">Vestibular Tradicional</option>
+                                    <option value="Sisu">Sisu</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="pre_requisito_ingresso" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Pré-requisito para Ingresso</label>
+                            <textarea id="pre_requisito_ingresso" name="pre_requisito_ingresso" rows="3" placeholder="Ex: Ensino Médio Completo"
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="turnos" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Turno(s) *</label>
+                                <select id="turnos" name="turnos" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Matutino">Matutino</option>
+                                    <option value="Vespertino">Vespertino</option>
+                                    <option value="Noturno">Noturno</option>
+                                    <option value="Integral">Integral</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="vagas_anuais" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Vagas Anuais *</label>
+                                <input type="number" id="vagas_anuais" name="vagas_anuais" required min="1" placeholder="Ex: 60"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="vagas_turno" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Vagas por Turno *</label>
+                                <input type="number" id="vagas_turno" name="vagas_turno" required min="1" placeholder="Ex: 30"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cursos Correlatos -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Cursos Correlatos no Campus</h3>
+                        <div class="mb-4">
+                            <label for="cursos_tecnicos_afins" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Cursos Técnicos Afins</label>
+                            <textarea id="cursos_tecnicos_afins" name="cursos_tecnicos_afins" rows="3"
+                                placeholder="Descreva os cursos técnicos afins ao curso proposto ofertados no campus..."
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        <div>
+                            <label for="outros_cursos_campus" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Outros Cursos do Campus</label>
+                            <textarea id="outros_cursos_campus" name="outros_cursos_campus" rows="3"
+                                placeholder="Relacione outros cursos ofertados pelo campus..."
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                    </div>
+
+                </form>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- TAB 3 — SITUAÇÃO E AVALIAÇÃO                              -->
+            <!-- ======================================================== -->
+            <section id="tab-situacao" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-situacao">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Situação e Avaliação do Curso</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Informe os indicadores de qualidade e a situação atual do curso.</p>
+                </div>
+
+                <form id="form-situacao" class="space-y-4">
+
+                    <!-- Indicadores MEC/INEP -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Indicadores de Avaliação (MEC/INEP)</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div>
+                                <label for="conceito_cc" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CC</label>
+                                <input type="text" id="conceito_cc" name="conceito_cc" placeholder="Ex: 4"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="conceito_cpc" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CPC</label>
+                                <input type="text" id="conceito_cpc" name="conceito_cpc" placeholder="Ex: 3"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="conceito_enade" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">ENADE</label>
+                                <input type="text" id="conceito_enade" name="conceito_enade" placeholder="Ex: 4"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="igc" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">IGC</label>
+                                <input type="text" id="igc" name="igc" placeholder="Ex: 3"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Situação e Reformulação -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Situação e Reformulação</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="tipo_reformulacao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Tipo de Reformulação</label>
+                                <select id="tipo_reformulacao" name="tipo_reformulacao" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Apresentação Inicial do PPC" selected>Apresentação Inicial do PPC</option>
+                                    <option value="Reformulação do PPC">Reformulação do PPC</option>
+                                    <option value="Reconhecimento">Reconhecimento</option>
+                                    <option value="Renovação de Reconhecimento">Renovação de Reconhecimento</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="status_curso" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Status do Curso *</label>
+                                <select id="status_curso" name="status_curso" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Aguardando autorização do conselho superior" selected>Aguardando autorização do conselho superior</option>
+                                    <option value="Autorizado pelo conselho superior">Autorizado pelo conselho superior</option>
+                                    <option value="Em funcionamento">Em funcionamento</option>
+                                    <option value="Aguardando reconhecimento do MEC">Aguardando reconhecimento do MEC</option>
+                                    <option value="Reconhecido pelo MEC">Reconhecido pelo MEC</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- TAB 4 — COMPONENTES CURRICULARES                          -->
+            <!-- ======================================================== -->
+            <section id="tab-componentes" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-componentes">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Componentes Curriculares</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastre as disciplinas que compõem a grade curricular do curso.</p>
+                </div>
+
+                <!-- Tabela de Componentes -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Grade Curricular</h3>
+                    <div class="overflow-x-auto">
+                        <table id="tabela-componentes" class="w-full text-sm text-left border border-gray-200 dark:border-gray-700">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">Código</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">Componente</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">Tipo</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">Período</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">Núcleo</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">Créditos</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">CH Total</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">H. Teóricas</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">H. Práticas</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">CH Ext.</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">Pré-req.</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700 whitespace-nowrap">Correq.</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="componentes-body"></tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 mt-4" id="table-empty-msg">Nenhum componente cadastrado. Utilize o formulário abaixo para adicionar.</p>
+                </div>
+
+                <form id="form-componente" class="space-y-4">
+
+                    <!-- Identificação -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Adicionar Componente</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="comp_codigo" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Código *</label>
+                                <input type="text" id="comp_codigo" name="comp_codigo" required placeholder="Ex: ENG001"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label for="comp_nome" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome do Componente *</label>
+                                <input type="text" id="comp_nome" name="comp_nome" required placeholder="Ex: Cálculo Diferencial e Integral I"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="comp_tipo" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Tipo *</label>
+                                <select id="comp_tipo" name="comp_tipo" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="Obrigatória" selected>Obrigatória</option>
+                                    <option value="Optativa">Optativa</option>
+                                    <option value="Eletiva">Eletiva</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="comp_periodo" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Período *</label>
+                                <select id="comp_periodo" name="comp_periodo" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="1">1º Período</option>
+                                    <option value="2">2º Período</option>
+                                    <option value="3">3º Período</option>
+                                    <option value="4">4º Período</option>
+                                    <option value="5">5º Período</option>
+                                    <option value="6">6º Período</option>
+                                    <option value="7">7º Período</option>
+                                    <option value="8">8º Período</option>
+                                    <option value="9">9º Período</option>
+                                    <option value="10">10º Período</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="nucleo_curricular" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Núcleo Curricular</label>
+                                <select id="nucleo_curricular" name="nucleo_curricular" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Núcleo Básico">Núcleo Básico</option>
+                                    <option value="Núcleo Profissionalizante">Núcleo Profissionalizante</option>
+                                    <option value="Núcleo de Aprofundamento">Núcleo de Aprofundamento</option>
+                                    <option value="Atividades Complementares">Atividades Complementares</option>
+                                    <option value="Extensão">Extensão</option>
+                                    <option value="TCC">TCC</option>
+                                    <option value="Estágio">Estágio</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="sub_nucleo" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Sub-Núcleo</label>
+                                <input type="text" id="sub_nucleo" name="sub_nucleo" placeholder="Ex: Formação Geral"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Créditos e CH -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Créditos e Cargas Horárias</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label for="comp_creditos" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Créditos</label>
+                                <input type="number" id="comp_creditos" name="comp_creditos" min="0" value="0"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="comp_ch_total_aula" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Total (H-Aula)</label>
+                                <input type="number" id="comp_ch_total_aula" name="comp_ch_total_aula" min="0" value="0"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="comp_ch_total_relogio" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Total (H-Relógio)</label>
+                                <input type="number" id="comp_ch_total_relogio" name="comp_ch_total_relogio" min="0" value="0"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="horas_extensao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Extensão</label>
+                                <input type="number" id="horas_extensao" name="horas_extensao" min="0" value="0"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="horas_teoricas" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Teórica</label>
+                                <input type="number" id="horas_teoricas" name="horas_teoricas" min="0" value="0"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="horas_praticas" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Prática</label>
+                                <input type="number" id="horas_praticas" name="horas_praticas" min="0" value="0"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ementa -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Ementa</h3>
+                        <textarea id="comp_ementa" name="comp_ementa" rows="5"
+                            placeholder="Descreva a ementa do componente curricular..."
+                            class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <!-- Vínculos -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Vínculos entre Componentes</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="pre_requisitos" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Pré-requisitos</label>
+                                <select id="pre_requisitos" name="pre_requisitos" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Nenhum</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="correquisitos" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Correquisitos</label>
+                                <select id="correquisitos" name="correquisitos" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Nenhum</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bibliografia -->
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Bibliografia</h3>
+                        <div class="mb-4">
+                            <label for="bib_basica" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Bibliografia Básica</label>
+                            <textarea id="bib_basica" name="bib_basica" rows="4"
+                                placeholder="Insira as referências bibliográficas básicas (mín. 3)..."
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            <p class="text-xs text-gray-400 mt-1">Separe cada referência em uma nova linha.</p>
+                        </div>
+                        <div>
+                            <label for="bib_complementar" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Bibliografia Complementar</label>
+                            <textarea id="bib_complementar" name="bib_complementar" rows="4"
+                                placeholder="Insira as referências bibliográficas complementares..."
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            <p class="text-xs text-gray-400 mt-1">Separe cada referência em uma nova linha.</p>
+                        </div>
+                    </div>
+
+                    <!-- Ações -->
+                    <div class="flex gap-3">
+                        <button type="submit" id="btn-adicionar"
+                            class="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Adicionar Componente
+                        </button>
+                        <button type="reset"
+                            class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 px-5 py-2.5 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            Limpar Formulário
+                        </button>
+                    </div>
+
+                </form>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- TAB 5 — MEMBROS INSTITUCIONAIS                            -->
+            <!-- ======================================================== -->
+            <section id="tab-membros" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-membros">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Membros Institucionais</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastre os membros envolvidos na elaboração e aprovação do PPC.</p>
+                </div>
+
+                <!-- Tabela -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Membros Cadastrados</h3>
+                    <div class="overflow-x-auto">
+                        <table id="tabela-membros" class="w-full text-sm text-left border border-gray-200 dark:border-gray-700">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Tipo</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Cargo</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Nome</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membros-body"></tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 mt-4" id="membros-empty-msg">Nenhum membro cadastrado.</p>
+                </div>
+
+                <!-- Formulário -->
+                <form id="form-membro">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Adicionar Membro</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="membro_tipo" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Tipo *</label>
+                                <select id="membro_tipo" name="membro_tipo" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Comissão de Elaboração">Comissão de Elaboração</option>
+                                    <option value="NDE">NDE</option>
+                                    <option value="Colegiado">Colegiado</option>
+                                    <option value="Gestão">Gestão</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="membro_cargo" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Cargo *</label>
+                                <input type="text" id="membro_cargo" name="membro_cargo" required placeholder="Ex: Diretor Geral"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="membro_nome" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome *</label>
+                                <input type="text" id="membro_nome" name="membro_nome" required placeholder="Ex: Prof. Dr. João da Silva"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="submit" id="btn-adicionar-membro"
+                                class="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Adicionar Membro
+                            </button>
+                            <button type="reset"
+                                class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 px-5 py-2.5 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- TAB 6 — CORPO DOCENTE                                     -->
+            <!-- ======================================================== -->
+            <section id="tab-corpo-docente" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-corpo-docente">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Corpo Docente</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Dados da coordenação e dos professores do curso.</p>
+                </div>
+
+                <!-- Coordenação -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Coordenação do Curso</h3>
+                    <form id="form-coordenacao" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="coord_nome" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome do Coordenador *</label>
+                                <input type="text" id="coord_nome" name="coord_nome" required placeholder="Ex: Prof. Dr. Maria Souza"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="coord_email" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">E-mail</label>
+                                <input type="email" id="coord_email" name="coord_email" placeholder="Ex: coordenador@ifpe.edu.br"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label for="coord_regime_trabalho" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Regime de Trabalho</label>
+                                <select id="coord_regime_trabalho" name="coord_regime_trabalho" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="DE">Dedicação Exclusiva (DE)</option>
+                                    <option value="40h">40 horas</option>
+                                    <option value="20h">20 horas</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="coord_ch_semanal" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CH Semanal Coordenação (h)</label>
+                                <input type="number" id="coord_ch_semanal" name="coord_ch_semanal" min="0" placeholder="Ex: 10"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="coord_qualificacao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Qualificação</label>
+                                <input type="text" id="coord_qualificacao" name="coord_qualificacao" placeholder="Ex: Doutor em Ciência da Computação"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="coord_tempo_ies" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Tempo de Exercício na IES</label>
+                                <input type="text" id="coord_tempo_ies" name="coord_tempo_ies" placeholder="Ex: 5 anos"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="coord_tempo_coord" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Tempo na Coordenação do Curso</label>
+                                <input type="text" id="coord_tempo_coord" name="coord_tempo_coord" placeholder="Ex: 2 anos"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="coord_grupos_pesquisa" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Grupos de Pesquisa</label>
+                                <input type="text" id="coord_grupos_pesquisa" name="coord_grupos_pesquisa" placeholder="Ex: Grupo de IA Aplicada"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="coord_linhas_pesquisa" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Linhas de Pesquisa</label>
+                                <input type="text" id="coord_linhas_pesquisa" name="coord_linhas_pesquisa" placeholder="Ex: Machine Learning, NLP"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="coord_exp_profissional" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Experiência Profissional (anos)</label>
+                                <input type="number" id="coord_exp_profissional" name="coord_exp_profissional" min="0" placeholder="Ex: 10"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="coord_exp_gestao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Experiência em Gestão</label>
+                                <input type="text" id="coord_exp_gestao" name="coord_exp_gestao" placeholder="Ex: 3 anos como coordenador"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="coord_titulacao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Titulação Detalhada</label>
+                            <textarea id="coord_titulacao" name="coord_titulacao" rows="3"
+                                placeholder="Ex: Doutorado em Ciência da Computação - UFPE (2015)..."
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabela Docentes -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Docentes Cadastrados</h3>
+                    <div class="overflow-x-auto">
+                        <table id="tabela-docentes" class="w-full text-sm text-left border border-gray-200 dark:border-gray-700">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Nome</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Titulação</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Regime</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Exp. Docência</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Lattes</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="docentes-body"></tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 mt-4" id="docentes-empty-msg">Nenhum docente cadastrado.</p>
+                </div>
+
+                <!-- Formulário Docente -->
+                <form id="form-docente">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Adicionar Docente</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="doc_nome" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome *</label>
+                                <input type="text" id="doc_nome" name="doc_nome" required placeholder="Ex: Prof. Dr. Carlos Pereira"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="doc_titulacao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Titulação</label>
+                                <select id="doc_titulacao" name="doc_titulacao" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Especialista">Especialista</option>
+                                    <option value="Mestre">Mestre</option>
+                                    <option value="Doutor">Doutor</option>
+                                    <option value="Pós-Doutor">Pós-Doutor</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="doc_regime" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Regime de Trabalho</label>
+                                <select id="doc_regime" name="doc_regime" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="DE">Dedicação Exclusiva (DE)</option>
+                                    <option value="40h">40 horas</option>
+                                    <option value="20h">20 horas</option>
+                                    <option value="Horista">Horista</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="doc_exp_docencia" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Exp. Docência (anos)</label>
+                                <input type="number" id="doc_exp_docencia" name="doc_exp_docencia" min="0" placeholder="Ex: 8"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="doc_lattes" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Link Lattes</label>
+                                <input type="url" id="doc_lattes" name="doc_lattes" placeholder="http://lattes.cnpq.br/..."
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="doc_formacao" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Formação Acadêmica</label>
+                            <textarea id="doc_formacao" name="doc_formacao" rows="3"
+                                placeholder="Ex: Doutorado em Engenharia Elétrica - UNICAMP (2018)..."
+                                class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="submit" id="btn-adicionar-docente"
+                                class="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Adicionar Docente
+                            </button>
+                            <button type="reset"
+                                class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 px-5 py-2.5 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- TAB 7 — INFRAESTRUTURA                                    -->
+            <!-- ======================================================== -->
+            <section id="tab-infraestrutura" class="tab-panel" role="tabpanel" aria-labelledby="btn-tab-infraestrutura">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Infraestrutura</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastre os ambientes e itens de infraestrutura disponíveis para o curso.</p>
+                </div>
+
+                <!-- Tabela Ambientes -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Ambientes Cadastrados</h3>
+                    <div class="overflow-x-auto">
+                        <table id="tabela-ambientes" class="w-full text-sm text-left border border-gray-200 dark:border-gray-700">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Categoria</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Nome do Ambiente</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Qtd.</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Área (m²)</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ambientes-body"></tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 mt-4" id="ambientes-empty-msg">Nenhum ambiente cadastrado.</p>
+                </div>
+
+                <!-- Form Ambiente -->
+                <form id="form-ambiente" class="mb-4">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                        <h3 class="text-base font-medium text-gray-800 dark:text-white mb-4">Adicionar Ambiente</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="amb_categoria" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Categoria *</label>
+                                <select id="amb_categoria" name="amb_categoria" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Sala de Aula">Sala de Aula</option>
+                                    <option value="Laboratório">Laboratório</option>
+                                    <option value="Biblioteca">Biblioteca</option>
+                                    <option value="Auditório">Auditório</option>
+                                    <option value="Área Administrativa">Área Administrativa</option>
+                                    <option value="Área de Convivência">Área de Convivência</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="amb_nome" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome do Ambiente *</label>
+                                <input type="text" id="amb_nome" name="amb_nome" required placeholder="Ex: Laboratório de Informática 01"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="amb_quantidade" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Quantidade</label>
+                                <input type="number" id="amb_quantidade" name="amb_quantidade" min="1" value="1"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="amb_area_m2" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Área (m²)</label>
+                                <input type="number" id="amb_area_m2" name="amb_area_m2" min="0" step="0.01" placeholder="Ex: 60.00"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="submit" id="btn-adicionar-ambiente"
+                                class="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Adicionar Ambiente
+                            </button>
+                            <button type="reset"
+                                class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 px-5 py-2.5 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Itens de Infraestrutura -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-4">
+                    <h3 class="text-base font-medium text-gray-800 dark:text-white mb-2">Itens de Infraestrutura</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Vincule equipamentos e mobiliário a um ambiente já cadastrado.</p>
+                    <div class="overflow-x-auto mb-4">
+                        <table id="tabela-itens-infra" class="w-full text-sm text-left border border-gray-200 dark:border-gray-700">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Ambiente</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Tipo</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Item</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Qtd.</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300 border-r border-gray-200 dark:border-gray-700">Especificações</th>
+                                    <th class="py-2 px-3 font-medium text-gray-600 dark:text-gray-300">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itens-infra-body"></tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-400 dark:text-gray-500 mb-4" id="itens-empty-msg">Nenhum item cadastrado.</p>
+
+                    <form id="form-item-infra">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="item_ambiente_ref" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Ambiente *</label>
+                                <select id="item_ambiente_ref" name="item_ambiente_ref" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione um ambiente...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="item_tipo" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Tipo *</label>
+                                <select id="item_tipo" name="item_tipo" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Selecione...</option>
+                                    <option value="Equipamento de Informática">Equipamento de Informática</option>
+                                    <option value="Mobiliário">Mobiliário</option>
+                                    <option value="Equipamento Audiovisual">Equipamento Audiovisual</option>
+                                    <option value="Equipamento de Laboratório">Equipamento de Laboratório</option>
+                                    <option value="Acervo Bibliográfico">Acervo Bibliográfico</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="item_nome" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome do Item *</label>
+                                <input type="text" id="item_nome" name="item_nome" required placeholder="Ex: Computador Desktop"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="item_quantidade" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Quantidade</label>
+                                <input type="number" id="item_quantidade" name="item_quantidade" min="1" value="1"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label for="item_especificacoes" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Especificações</label>
+                                <input type="text" id="item_especificacoes" name="item_especificacoes" placeholder="Ex: Core i7, 16GB RAM, 512GB SSD"
+                                    class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="submit" id="btn-adicionar-item"
+                                class="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Adicionar Item
+                            </button>
+                            <button type="reset"
+                                class="border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 px-5 py-2.5 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                Limpar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Rodapé da área de conteúdo -->
+            <footer class="text-center text-xs text-gray-400 dark:text-gray-600 mt-10 pb-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                <p>&copy; 2026 IFPE - Campus Belo Jardim. Sistema de Geração de PPC.</p>
+            </footer>
+
+        </div><!-- /.px-6.py-8 -->
+    </main>
+</div><!-- /.flex -->
+
+<!-- ================================================================== -->
+<!-- MODAIS                                                               -->
+<!-- ================================================================== -->
+
+<!-- Modal: Limpar Formulário -->
+<div id="modal-limpar" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 shadow-xl">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Limpar Formulário</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">Tem certeza que deseja apagar todos os dados preenchidos? Esta ação não pode ser desfeita.</p>
+        <div class="flex justify-end gap-3">
+            <button type="button" id="btn-cancelar-limpar"
+                class="px-4 py-2 text-sm text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded border border-gray-300 dark:border-gray-600 transition-colors">
+                Cancelar
+            </button>
+            <button type="button" id="btn-confirmar-limpar"
+                class="px-4 py-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded transition-colors">
+                Limpar Dados
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Remover Componente -->
+<div id="modal-remover-componente" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 shadow-xl">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Remover Componente</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">Tem certeza que deseja remover este componente curricular? Esta ação não pode ser desfeita.</p>
+        <div class="flex justify-end gap-3">
+            <button type="button" id="btn-cancelar-remover"
+                class="px-4 py-2 text-sm text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded border border-gray-300 dark:border-gray-600 transition-colors">
+                Cancelar
+            </button>
+            <button type="button" id="btn-confirmar-remover"
+                class="px-4 py-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded transition-colors">
+                Remover
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="js/mask.js"></script>
+<script src="js/cep.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/componentes.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/tabs.js"></script>
+<script src="js/crud.js"></script>
+
+</body>
+</html>
