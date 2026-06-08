@@ -1258,6 +1258,30 @@
     </div>
 </div>
 
+<!-- Modal: Validação para Enviar PPC -->
+<div id="modal-validacao-envio" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-[400px] shadow-xl">
+        <div class="flex items-center gap-3">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Campos obrigatórios incompletos</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Corrija os itens faltantes.</p>
+            </div>
+        </div>
+        <div class="flex justify-end">
+            <button type="button" id="btn-fechar-validacao"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Entendido
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal: Remover Componente -->
 <div id="modal-remover-componente" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
     <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 shadow-xl">
@@ -1276,6 +1300,7 @@
     </div>
 </div>
 
+<script src="js/validation.js"></script>
 <script src="js/mask.js"></script>
 <script src="js/cep.js"></script>
 <script src="js/modal.js"></script>
