@@ -8,5 +8,5 @@
  * Referência: https://tailwindcss.com/docs/installation/play-cdn
  */
 tailwind.config = {
-    darkMode: 'class',
+  darkMode: "class",
 };

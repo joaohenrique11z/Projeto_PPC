@@ -210,10 +210,15 @@ function showValidationModal(errors) {
   for (const message of errors) {
     const item = document.createElement("li");
     item.className = "flex items-start gap-2";
-    item.innerHTML = `
-      <span class="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-400"></span>
-      <span>${message}</span>
-    `;
+
+    const icon = document.createElement("span");
+    icon.className = "mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-400";
+
+    const textSpan = document.createElement("span");
+    textSpan.textContent = message;
+
+    item.appendChild(icon);
+    item.appendChild(textSpan);
     errorList.appendChild(item);
   }
 

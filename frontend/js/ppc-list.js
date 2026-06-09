@@ -205,37 +205,55 @@
             const tdClassHidden = 'px-4 py-3 dark:text-gray-300 hidden sm:table-cell';
             const tdClassMd = 'px-4 py-3 dark:text-gray-300 hidden md:table-cell';
 
-            tr.innerHTML = `
-                <td class="${tdClass}">
-                    <button type="button" class="btn-editar-nome text-blue-600 hover:text-blue-800 font-medium" data-id="${ppc.id}">
-                        ${ppc.nome}
+            const td1 = document.createElement('td');
+            td1.className = tdClass;
+            const btnNome = document.createElement('button');
+            btnNome.type = 'button';
+            btnNome.className = 'btn-editar-nome text-blue-600 hover:text-blue-800 font-medium';
+            btnNome.dataset.id = ppc.id;
+            btnNome.textContent = ppc.nome;
+            td1.appendChild(btnNome);
+
+            const td2 = document.createElement('td');
+            td2.className = tdClassHidden;
+            td2.textContent = ppc.ano;
+
+            const td3 = document.createElement('td');
+            td3.className = tdClass;
+            const spanStatus = document.createElement('span');
+            spanStatus.className = `inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+                ppc.status === 'Rascunho'
+                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                    : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+            }`;
+            spanStatus.textContent = ppc.status;
+            td3.appendChild(spanStatus);
+
+            const td4 = document.createElement('td');
+            td4.className = tdClassMd;
+            td4.textContent = formatarData(ppc.dataAtualizacao);
+
+            const td5 = document.createElement('td');
+            td5.className = 'px-4 py-3 text-center';
+            td5.innerHTML = `
+                <div class="flex gap-2 justify-center flex-wrap">
+                    <button type="button" class="btn-editar text-blue-600 hover:text-blue-800 text-xs font-medium" data-id="${ppc.id}">
+                        Editar
                     </button>
-                </td>
-                <td class="${tdClassHidden}">${ppc.ano}</td>
-                <td class="${tdClass}">
-                    <span class="inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
-                        ppc.status === 'Rascunho'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                            : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                    }">
-                        ${ppc.status}
-                    </span>
-                </td>
-                <td class="${tdClassMd}">${formatarData(ppc.dataAtualizacao)}</td>
-                <td class="px-4 py-3 text-center">
-                    <div class="flex gap-2 justify-center flex-wrap">
-                        <button type="button" class="btn-editar text-blue-600 hover:text-blue-800 text-xs font-medium" data-id="${ppc.id}">
-                            Editar
-                        </button>
-                        <button type="button" class="btn-duplicar text-green-600 hover:text-green-800 text-xs font-medium" data-id="${ppc.id}">
-                            Duplicar
-                        </button>
-                        <button type="button" class="btn-deletar text-red-600 hover:text-red-800 text-xs font-medium" data-id="${ppc.id}">
-                            Deletar
-                        </button>
-                    </div>
-                </td>
+                    <button type="button" class="btn-duplicar text-green-600 hover:text-green-800 text-xs font-medium" data-id="${ppc.id}">
+                        Duplicar
+                    </button>
+                    <button type="button" class="btn-deletar text-red-600 hover:text-red-800 text-xs font-medium" data-id="${ppc.id}">
+                        Deletar
+                    </button>
+                </div>
             `;
+            
+            tr.appendChild(td1);
+            tr.appendChild(td2);
+            tr.appendChild(td3);
+            tr.appendChild(td4);
+            tr.appendChild(td5);
 
             tbody.appendChild(tr);
         });
