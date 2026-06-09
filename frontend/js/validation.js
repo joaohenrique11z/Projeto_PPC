@@ -324,9 +324,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnConfirm) {
     btnConfirm.addEventListener("click", () => {
       closeConfirmModal();
-      // Redirect to index.html since the collector test was removed.
-      console.info("[validation.js] User confirmed. Redirecting to index.");
-      window.location.href = "index.html";
+      // Notify ppc-submit.js to build the payload and POST to API.
+      console.info("[validation.js] User confirmed. Dispatching 'ppc:ready'.");
+      document.dispatchEvent(new CustomEvent('ppc:ready', { bubbles: true }));
+      document.dispatchEvent(new CustomEvent('ppc:submit', { bubbles: true }));
     });
   }
 });

@@ -1353,6 +1353,59 @@
     </div>
 </div>
 
+<!-- Modal: Confirmação de Envio do PPC -->
+<div id="modal-confirmar-envio" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-[480px] max-w-[calc(100vw-2rem)] overflow-hidden">
+
+        <!-- Cabeçalho colorido -->
+        <div class="bg-gradient-to-r from-blue-700 to-blue-500 px-6 py-5 flex items-center gap-4">
+            <div class="flex-shrink-0 w-11 h-11 rounded-full bg-white/20 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-base font-semibold text-white leading-tight">Enviar Projeto Pedagógico de Curso</h3>
+                <p class="text-sm text-blue-100 mt-0.5">Confirme antes de prosseguir</p>
+            </div>
+        </div>
+
+        <!-- Corpo -->
+        <div class="px-6 py-5">
+            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                Todos os dados foram preenchidos corretamente. Ao confirmar, o PPC será
+                <strong class="text-gray-900 dark:text-white">registrado no banco de dados e você será redirecionado</strong>
+                para a tela inicial.
+            </p>
+            <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/40 rounded-lg flex items-start gap-2.5">
+                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+                    Esta ação não pode ser desfeita após a confirmação. Certifique-se de que todas as informações estão corretas.
+                </p>
+            </div>
+        </div>
+
+        <!-- Rodapé com ações -->
+        <div class="px-6 pb-5 flex justify-end gap-3">
+            <button type="button" id="btn-cancelar-envio"
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300">
+                Cancelar
+            </button>
+            <button type="button" id="btn-confirmar-envio"
+                class="px-5 py-2 text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Confirmar Envio
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="js/validation.js"></script>
 <script src="js/mask.js"></script>
 <script src="js/cep.js"></script>
@@ -1361,7 +1414,7 @@
 <script src="js/theme.js"></script>
 <script src="js/tabs.js"></script>
 <script src="js/crud.js"></script>
-
+<script src="js/ppc-submit.js"></script>
 
 </body>
 </html>
