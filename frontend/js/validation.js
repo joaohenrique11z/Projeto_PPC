@@ -52,12 +52,17 @@ const TAB_FIELD_CHECKS = [
   },
 ];
 
-// IDs of the modal and its close button (already present in forms.html).
-const MODAL_ID        = "modal-validacao-envio";
-const MODAL_CLOSE_BTN = "btn-fechar-validacao";
+// IDs of the validation error modal and its close button.
+const MODAL_ID              = "modal-validacao-envio";
+const MODAL_CLOSE_BTN       = "btn-fechar-validacao";
+
+// IDs of the confirmation modal and its action buttons.
+const MODAL_CONFIRM_ID      = "modal-confirmar-envio";
+const BTN_CONFIRM_SEND      = "btn-confirmar-envio";
+const BTN_CANCEL_SEND       = "btn-cancelar-envio";
 
 // ID of the submit button in the sidebar.
-const SUBMIT_BTN_ID   = "btn-enviar-ppc";
+const SUBMIT_BTN_ID         = "btn-enviar-ppc";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -258,9 +263,12 @@ function handleSubmitValidation(event) {
     return;
   }
 
-  // All validations passed — implement your actual submission logic here.
-  console.info("[validation.js] All checks passed. Proceeding with PPC submission.");
-  // TODO: trigger your API call or form POST here.
+  // All validations passed — open the confirmation modal before dispatching.
+  console.info("[validation.js] All checks passed. Opening confirmation modal.");
+  const confirmModal = document.getElementById(MODAL_CONFIRM_ID);
+  if (confirmModal) confirmModal.classList.remove("hidden");
+
+  
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -278,18 +286,47 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  // Attach close behaviour to the modal's "Entendido" button.
+  // Attach close behaviour to the validation modal's "Entendido" button.
   const closeBtn = document.getElementById(MODAL_CLOSE_BTN);
   if (closeBtn) {
     closeBtn.addEventListener("click", closeValidationModal);
   }
 
-  // Also close when clicking the backdrop (the semi-transparent overlay).
+  // Also close validation modal when clicking the backdrop.
   const modal = document.getElementById(MODAL_ID);
   if (modal) {
     modal.addEventListener("click", (event) => {
-      // Close only when the click target is the backdrop itself, not the card.
       if (event.target === modal) closeValidationModal();
+    });
+  }
+
+  // ── Confirmation modal listeners ─────────────────────────────────────
+  const confirmModal  = document.getElementById(MODAL_CONFIRM_ID);
+  const btnConfirm    = document.getElementById(BTN_CONFIRM_SEND);
+  const btnCancelSend = document.getElementById(BTN_CANCEL_SEND);
+
+  /** Closes the confirmation modal without taking any action. */
+  function closeConfirmModal() {
+    if (confirmModal) confirmModal.classList.add("hidden");
+  }
+
+  if (btnCancelSend) {
+    btnCancelSend.addEventListener("click", closeConfirmModal);
+  }
+
+  // Close when clicking the backdrop of the confirmation modal.
+  if (confirmModal) {
+    confirmModal.addEventListener("click", (event) => {
+      if (event.target === confirmModal) closeConfirmModal();
+    });
+  }
+
+  if (btnConfirm) {
+    btnConfirm.addEventListener("click", () => {
+      closeConfirmModal();
+      // Redirect to index.html since the collector test was removed.
+      console.info("[validation.js] User confirmed. Redirecting to index.");
+      window.location.href = "index.html";
     });
   }
 });
