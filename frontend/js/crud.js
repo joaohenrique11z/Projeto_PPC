@@ -18,21 +18,27 @@
     /* ================================================================== */
 
     /**
-     * Cria o HTML de uma célula <td> com borda à direita (coluna não-final).
-     * @param {string} content - Conteúdo HTML ou texto da célula.
-     * @returns {string}
+     * Cria um elemento <td> com borda à direita (coluna não-final).
+     * @param {string} text - Conteúdo em texto da célula.
+     * @returns {HTMLTableCellElement}
      */
-    function tdBorder(content) {
-        return `<td class="py-2 px-3 border-r border-gray-200 dark:border-gray-700 dark:text-gray-300">${content}</td>`;
+    function createTdBorder(text) {
+        const td = document.createElement('td');
+        td.className = 'py-2 px-3 border-r border-gray-200 dark:border-gray-700 dark:text-gray-300';
+        td.textContent = text;
+        return td;
     }
 
     /**
-     * Cria o HTML da última célula <td> de uma linha (sem borda à direita).
-     * @param {string} content - Conteúdo HTML ou texto da célula.
-     * @returns {string}
+     * Cria o elemento da última célula <td> de uma linha (sem borda à direita).
+     * @param {string} htmlContent - Conteúdo HTML da célula (botões).
+     * @returns {HTMLTableCellElement}
      */
-    function tdLast(content) {
-        return `<td class="py-2 px-3 dark:text-gray-300">${content}</td>`;
+    function createTdLast(htmlContent) {
+        const td = document.createElement('td');
+        td.className = 'py-2 px-3 dark:text-gray-300';
+        td.innerHTML = htmlContent;
+        return td;
     }
 
     /**
@@ -75,16 +81,15 @@
         membros.forEach((m, i) => {
             const tr = document.createElement('tr');
             tr.className = trClass();
-            tr.innerHTML =
-                tdBorder(m.tipo) +
-                tdBorder(m.cargo) +
-                tdBorder(m.nome) +
-                tdLast(
-                    `<div class="flex gap-3">
-                        <button type="button" data-idx="${i}" class="btn-edit-membro text-blue-600 hover:text-blue-800 text-xs font-medium">Editar</button>
-                        <button type="button" data-idx="${i}" class="btn-rm-membro text-red-600 hover:text-red-800 text-xs font-medium">Remover</button>
-                    </div>`
-                );
+            tr.appendChild(createTdBorder(m.tipo));
+            tr.appendChild(createTdBorder(m.cargo));
+            tr.appendChild(createTdBorder(m.nome));
+            tr.appendChild(createTdLast(
+                `<div class="flex gap-3">
+                    <button type="button" data-idx="${i}" class="btn-edit-membro text-blue-600 hover:text-blue-800 text-xs font-medium">Editar</button>
+                    <button type="button" data-idx="${i}" class="btn-rm-membro text-red-600 hover:text-red-800 text-xs font-medium">Remover</button>
+                </div>`
+            ));
             membrosBody.appendChild(tr);
         });
 
@@ -179,25 +184,34 @@
         docentesEmpty && docentesEmpty.classList.toggle('hidden', docentes.length > 0);
 
         docentes.forEach((d, i) => {
-            const lattesLink = d.lattes
-                ? `<a href="${d.lattes}" target="_blank" rel="noopener"
-                      class="text-blue-600 underline text-xs">Ver</a>`
-                : '—';
-
             const tr = document.createElement('tr');
             tr.className = trClass();
-            tr.innerHTML =
-                tdBorder(d.nome) +
-                tdBorder(d.titulacao || '—') +
-                tdBorder(d.regime    || '—') +
-                tdBorder((d.exp_docencia || 0) + ' anos') +
-                tdBorder(lattesLink) +
-                tdLast(
-                    `<div class="flex gap-3">
-                        <button type="button" data-idx="${i}" class="btn-edit-docente text-blue-600 hover:text-blue-800 text-xs font-medium">Editar</button>
-                        <button type="button" data-idx="${i}" class="btn-rm-docente text-red-600 hover:text-red-800 text-xs font-medium">Remover</button>
-                    </div>`
-                );
+            
+            tr.appendChild(createTdBorder(d.nome));
+            tr.appendChild(createTdBorder(d.titulacao || '—'));
+            tr.appendChild(createTdBorder(d.regime || '—'));
+            tr.appendChild(createTdBorder((d.exp_docencia || 0) + ' anos'));
+
+            const lattesTd = createTdBorder('');
+            if (d.lattes) {
+                const a = document.createElement('a');
+                a.href = d.lattes;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.className = 'text-blue-600 underline text-xs';
+                a.textContent = 'Ver';
+                lattesTd.appendChild(a);
+            } else {
+                lattesTd.textContent = '—';
+            }
+            tr.appendChild(lattesTd);
+
+            tr.appendChild(createTdLast(
+                `<div class="flex gap-3">
+                    <button type="button" data-idx="${i}" class="btn-edit-docente text-blue-600 hover:text-blue-800 text-xs font-medium">Editar</button>
+                    <button type="button" data-idx="${i}" class="btn-rm-docente text-red-600 hover:text-red-800 text-xs font-medium">Remover</button>
+                </div>`
+            ));
             docentesBody.appendChild(tr);
         });
 
@@ -303,23 +317,22 @@
 
         // Reseta o select de referência mantendo o placeholder
         if (selectAmbRef) {
-            selectAmbRef.innerHTML = '<option value="">Selecione um ambiente...</option>';
+            selectAmbRef.innerHTML = '<option value="">Selecione...</option>';
         }
 
         ambientes.forEach((a, i) => {
             const tr = document.createElement('tr');
             tr.className = trClass();
-            tr.innerHTML =
-                tdBorder(a.categoria) +
-                tdBorder(a.nome) +
-                tdBorder(a.quantidade) +
-                tdBorder(a.area_m2 ? `${a.area_m2} m²` : '—') +
-                tdLast(
-                    `<div class="flex gap-3">
-                        <button type="button" data-idx="${i}" class="btn-edit-amb text-blue-600 hover:text-blue-800 text-xs font-medium">Editar</button>
-                        <button type="button" data-idx="${i}" class="btn-rm-amb text-red-600 hover:text-red-800 text-xs font-medium">Remover</button>
-                    </div>`
-                );
+            tr.appendChild(createTdBorder(a.categoria));
+            tr.appendChild(createTdBorder(a.nome));
+            tr.appendChild(createTdBorder(a.quantidade));
+            tr.appendChild(createTdBorder(a.area_m2 ? `${a.area_m2} m²` : '—'));
+            tr.appendChild(createTdLast(
+                `<div class="flex gap-3">
+                    <button type="button" data-idx="${i}" class="btn-edit-amb text-blue-600 hover:text-blue-800 text-xs font-medium">Editar</button>
+                    <button type="button" data-idx="${i}" class="btn-rm-amb text-red-600 hover:text-red-800 text-xs font-medium">Remover</button>
+                </div>`
+            ));
             ambientesBody.appendChild(tr);
 
             // Adiciona opção ao select de referência
@@ -441,18 +454,17 @@
 
             const tr = document.createElement('tr');
             tr.className = trClass();
-            tr.innerHTML =
-                tdBorder(ambNome) +
-                tdBorder(it.tipo) +
-                tdBorder(it.nome) +
-                tdBorder(it.quantidade) +
-                tdBorder(it.especificacoes || '—') +
-                tdLast(
-                    `<div class="flex gap-3">
-                        <button type="button" data-idx="${i}" class="btn-edit-item text-blue-600 hover:text-blue-800 text-xs font-medium">Editar</button>
-                        <button type="button" data-idx="${i}" class="btn-rm-item text-red-600 hover:text-red-800 text-xs font-medium">Remover</button>
-                    </div>`
-                );
+            tr.appendChild(createTdBorder(ambNome));
+            tr.appendChild(createTdBorder(it.tipo));
+            tr.appendChild(createTdBorder(it.nome));
+            tr.appendChild(createTdBorder(it.quantidade));
+            tr.appendChild(createTdBorder(it.especificacoes || '—'));
+            tr.appendChild(createTdLast(
+                `<div class="flex gap-3">
+                    <button type="button" data-idx="${i}" class="btn-edit-item text-blue-600 hover:text-blue-800 text-xs font-medium">Editar</button>
+                    <button type="button" data-idx="${i}" class="btn-rm-item text-red-600 hover:text-red-800 text-xs font-medium">Remover</button>
+                </div>`
+            ));
             itensBody.appendChild(tr);
         });
 

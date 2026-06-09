@@ -14,7 +14,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+from routes.ppc_routes import router as ppc_router
 
+app.include_router(ppc_router)
 
 @app.get("/api/health")
 def health_check():
