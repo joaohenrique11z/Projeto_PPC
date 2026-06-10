@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from routes import router
 
 app = FastAPI(
     title="PPC API",
     description="API para geração de Projetos Pedagógicos de Curso - IFPE Campus Belo Jardim",
-    version="0.1.0",
+    version="1.0.0",
 )
 
 app.add_middleware(
