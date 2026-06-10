@@ -3,17 +3,17 @@
  *
  * O backend espera UM único POST /api/ppc com esse formato:
  * {
- *   "ppc": { ...dados do curso... },
- *   "membros": [...],
- *   "coordenacao": {...},
- *   "docentes": [...],
- *   "componentes": [...],
- *   "ambientes": [...]
+ * "ppc": { ...dados do curso... },
+ * "membros": [...],
+ * "coordenacao": {...},
+ * "docentes": [...],
+ * "componentes": [...],
+ * "ambientes": [...]
  * }
  *
  * Como usar:
- *   Adicione no final do forms.html, antes de </body>:
- *   <script src="js/api.js"></script>
+ * Adicione no final do forms.html, antes de </body>:
+ * <script src="js/api.js"></script>
  */
 
 const API_BASE = 'http://localhost:8000/api';
@@ -30,73 +30,73 @@ const estadoPPC = {
 };
 
 // ─────────────────────────────────────────────────────────────
-// Utilitários
+// Utilitários de Extração e Interface
 // ─────────────────────────────────────────────────────────────
 
-function v(id) {
+function obterTexto(id) {
   return document.getElementById(id)?.value?.trim() || null;
 }
 
-function n(id) {
-  const val = parseInt(document.getElementById(id)?.value);
-  return isNaN(val) ? null : val;
+function obterNumero(id) {
+  const valor = parseInt(document.getElementById(id)?.value);
+  return isNaN(valor) ? null : valor;
 }
 
-function mostrarNotificacao(msg, tipo = 'sucesso') {
+function exibirNotificacao(mensagem, tipo = 'sucesso') {
   const cores = { sucesso: 'bg-green-600', erro: 'bg-red-600', info: 'bg-blue-600' };
-  const notif = document.createElement('div');
-  notif.className = `fixed top-4 right-4 z-50 px-5 py-3 rounded shadow-lg text-white text-sm font-medium transition-all ${cores[tipo]}`;
-  notif.textContent = msg;
-  document.body.appendChild(notif);
-  setTimeout(() => notif.remove(), 3500);
+  const notificacao = document.createElement('div');
+  notificacao.className = `fixed top-4 right-4 z-50 px-5 py-3 rounded shadow-lg text-white text-sm font-medium transition-all ${cores[tipo]}`;
+  notificacao.textContent = mensagem;
+  document.body.appendChild(notificacao);
+  setTimeout(() => notificacao.remove(), 3500);
 }
 
-function setCarregando(btn, carregando) {
-  if (!btn) return;
-  btn.disabled = carregando;
-  btn.dataset.textoOriginal = btn.dataset.textoOriginal || btn.textContent;
-  btn.textContent = carregando ? 'Salvando...' : btn.dataset.textoOriginal;
+function alternarLoadingBotao(botao, estaCarregando) {
+  if (!botao) return;
+  botao.disabled = estaCarregando;
+  botao.dataset.textoOriginal = botao.dataset.textoOriginal || botao.textContent;
+  botao.textContent = estaCarregando ? 'Salvando...' : botao.dataset.textoOriginal;
 }
 
 // ─────────────────────────────────────────────────────────────
-// Coleta os dados dos formulários
+// Mapeamento e Submissão de Dados
 // ─────────────────────────────────────────────────────────────
 
-function coletarPPC() {
+function mapearFormularioPPC() {
   return {
-    campus_name:                  v('campus_name'),
-    cnpj:                         v('cnpj'),
-    cep:                          v('cep'),
-    cidade:                       v('cidade'),
-    bairro:                       v('bairro'),
-    rua:                          v('rua'),
-    numero:                       v('numero'),
-    telefone_fax:                 v('telefone_fax'),
-    email_contato:                v('email_contato'),
-    ato_legal:                    v('ato_legal'),
-    sitio_web:                    v('sitio_web') || v('sitio'),
-    nome_curso:                   v('nome_curso'),
-    area_conhecimento:            v('eixo_tecnologico'),
-    nivel:                        v('tipo_curso'),
-    modalidade_curso:             v('modalidade_curso'),
-    titulacao:                    v('titulacao'),
-    atividades_complementares:    n('atividades_complementares'),
-    integralizacao_min_semestres: n('integralizacao_min_semestres'),
-    integralizacao_max_semestres: n('integralizacao_max_semestres'),
-    formas_acesso:                v('formas_acesso'),
-    pre_requisito_ingresso:       v('pre_requisito_ingresso'),
-    vagas_turno:                  n('vagas_turno'),
-    vagas_anuais:                 n('vagas_semestre') || n('vagas_anuais'),
-    turnos:                       v('turnos'),
-    regime_matricula:             v('regime') || v('regime_matricula'),
-    semanas_letivas:              n('semanas_letivas'),
-    ch_extensao:                  n('ch_estagio') || n('ch_extensao'),
-    conceito_cc:                  v('conceito_cc'),
-    conceito_cpc:                 v('conceito_cpc'),
-    conceito_enade:               v('conceito_enade'),
-    igc:                          v('igc'),
-    tipo_reformulacao:            v('situacao_curso') || v('tipo_reformulacao'),
-    status_curso:                 v('status_curso'),
+    campus_name:                  obterTexto('campus_name'),
+    cnpj:                         obterTexto('cnpj'),
+    cep:                          obterTexto('cep'),
+    cidade:                       obterTexto('cidade'),
+    bairro:                       obterTexto('bairro'),
+    rua:                          obterTexto('rua'),
+    numero:                       obterTexto('numero'),
+    telefone_fax:                 obterTexto('telefone_fax'),
+    email_contato:                obterTexto('email_contato'),
+    ato_legal:                    obterTexto('ato_legal'),
+    sitio_web:                    obterTexto('sitio_web') || obterTexto('sitio'),
+    nome_curso:                   obterTexto('nome_curso'),
+    area_conhecimento:            obterTexto('eixo_tecnologico'),
+    nivel:                        obterTexto('tipo_curso'),
+    modalidade_curso:             obterTexto('modalidade_curso'),
+    titulacao:                    obterTexto('titulacao'),
+    atividades_complementares:    obterNumero('atividades_complementares'),
+    integralizacao_min_semestres: obterNumero('integralizacao_min_semestres'),
+    integralizacao_max_semestres: obterNumero('integralizacao_max_semestres'),
+    formas_acesso:                obterTexto('formas_acesso'),
+    pre_requisito_ingresso:       obterTexto('pre_requisito_ingresso'),
+    vagas_turno:                  obterNumero('vagas_turno'),
+    vagas_anuais:                 obterNumero('vagas_semestre') || obterNumero('vagas_anuais'),
+    turnos:                       obterTexto('turnos'),
+    regime_matricula:             obterTexto('regime') || obterTexto('regime_matricula'),
+    semanas_letivas:              obterNumero('semanas_letivas'),
+    ch_extensao:                  obterNumero('ch_estagio') || obterNumero('ch_extensao'),
+    conceito_cc:                  obterTexto('conceito_cc'),
+    conceito_cpc:                 obterTexto('conceito_cpc'),
+    conceito_enade:               obterTexto('conceito_enade'),
+    igc:                          obterTexto('igc'),
+    tipo_reformulacao:            obterTexto('situacao_curso') || obterTexto('tipo_reformulacao'),
+    status_curso:                 obterTexto('status_curso'),
   };
 }
 
@@ -104,67 +104,64 @@ function coletarPPC() {
 // Envia tudo para o backend
 // ─────────────────────────────────────────────────────────────
 
-async function enviarPPC(btn) {
-  setCarregando(btn, true);
+async function submeterDadosPPC(botaoSubmit) {
+  alternarLoadingBotao(botaoSubmit, true);
   try {
     const payload = {
-      ppc:        coletarPPC(),
-      membros:    estadoPPC.membros,
+      ppc:         mapearFormularioPPC(),
+      membros:     estadoPPC.membros,
       coordenacao: estadoPPC.coordenacao || null,
-      docentes:   estadoPPC.docentes,
+      docentes:    estadoPPC.docentes,
       componentes: estadoPPC.componentes,
-      ambientes:  estadoPPC.ambientes,
+      ambientes:   estadoPPC.ambientes,
     };
 
-    const res = await fetch(`${API_BASE}/ppc`, {
+    const resposta = await fetch(`${API_BASE}/ppc`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(JSON.stringify(err.detail) || `Erro ${res.status}`);
+    if (!resposta.ok) {
+      const erro = await resposta.json().catch(() => ({}));
+      throw new Error(JSON.stringify(erro.detail) || `Erro ${resposta.status}`);
     }
 
-    const data = await res.json();
-    mostrarNotificacao(`PPC salvo com sucesso! ID: ${data.ppc_id.slice(0, 8)}... ✓`);
-    console.log('PPC criado:', data.ppc_id);
+    const dadosRetornados = await resposta.json();
+    exibirNotificacao(`PPC salvo com sucesso! ID: ${dadosRetornados.ppc_id.slice(0, 8)}... ✓`);
+    console.log('PPC criado:', dadosRetornados.ppc_id);
 
-  } catch (err) {
-    mostrarNotificacao(`Erro ao salvar: ${err.message}`, 'erro');
-    console.error(err);
+  } catch (erro) {
+    exibirNotificacao(`Erro ao salvar: ${erro.message}`, 'erro');
+    console.error(erro);
   } finally {
-    setCarregando(btn, false);
+    alternarLoadingBotao(botaoSubmit, false);
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-// Intercepta o form de componentes para acumular no estado
-// (o componentes.js já cuida da tabela visual — aqui só salvamos
-//  no estadoPPC para enviar junto no payload final)
+// Sincroniza o form de componentes para acumular no estado
 // ─────────────────────────────────────────────────────────────
 
-function interceptarFormComponentes() {
-  const form = document.getElementById('form-componente');
-  if (!form) return;
+function sincronizarFormularioComponentes() {
+  const formularioComponente = document.getElementById('form-componente');
+  if (!formularioComponente) return;
 
-  form.addEventListener('submit', () => {
+  formularioComponente.addEventListener('submit', () => {
     // Coleta logo após o submit (antes do componentes.js limpar o form)
     setTimeout(() => {
       // Sincroniza com o array interno do componentes.js se disponível
-      // Caso contrário, coleta direto dos campos
       if (window.__componentesState) {
-        estadoPPC.componentes = window.__componentesState.map(c => ({
-          codigo:        c.codigo,
-          nome:          c.nome,
-          tipo:          c.tipo,
-          periodo:       parseInt(c.periodo),
-          creditos:      c.totalCreditos,
-          ch_pratica:    c.hrPraticas,
-          ch_teorica:    c.hrTeoricas,
-          ch_extensao:   c.hrExtensao || 0,
-          ch_total_aula: c.totalHoras,
+        estadoPPC.componentes = window.__componentesState.map(componente => ({
+          codigo:        componente.codigo,
+          nome:          componente.nome,
+          tipo:          componente.tipo,
+          periodo:       parseInt(componente.periodo),
+          creditos:      componente.totalCreditos,
+          ch_pratica:    componente.hrPraticas,
+          ch_teorica:    componente.hrTeoricas,
+          ch_extensao:   componente.hrExtensao || 0,
+          ch_total_aula: componente.totalHoras,
           bibliografias: [],
         }));
       }
@@ -178,19 +175,18 @@ function interceptarFormComponentes() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Botão "Enviar PPC"
-  const btnEnviar = document.getElementById('btn-enviar-ppc')
+  const botaoEnviar = document.getElementById('btn-enviar-ppc')
     || document.querySelector('button.btn-enviar')
     || [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Enviar PPC');
 
-  if (btnEnviar) {
-    btnEnviar.addEventListener('click', (e) => {
-      e.preventDefault();
-      enviarPPC(btnEnviar);
+  if (botaoEnviar) {
+    botaoEnviar.addEventListener('click', (evento) => {
+      evento.preventDefault();
+      submeterDadosPPC(botaoEnviar);
     });
   }
 
-  interceptarFormComponentes();
+  sincronizarFormularioComponentes();
 });
 
 // ─────────────────────────────────────────────────────────────
