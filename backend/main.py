@@ -1,7 +1,9 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import router
-
 app = FastAPI(
     title="PPC API",
     description="API para geração de Projetos Pedagógicos de Curso - IFPE Campus Belo Jardim",
