@@ -211,7 +211,7 @@
         <div class="p-4 border-t border-gray-100 dark:border-gray-800">
             <button type="button" id="btn-enviar-ppc"
                 class="w-full bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Enviar PPC
+                Salvar PPC
             </button>
         </div>
     </aside>
@@ -1292,25 +1292,29 @@
     </div>
 </div>
 
-<!-- Modal: Validação para Enviar PPC -->
+<!-- Modal: Aviso de Campos Incompletos -->
 <div id="modal-validacao-envio" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-[400px] shadow-xl">
-        <div class="flex items-center gap-3">
-            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-[460px] shadow-xl">
+        <div class="flex items-center gap-3 mb-1">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                 </svg>
             </div>
             <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Campos obrigatórios incompletos</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Corrija os itens faltantes.</p>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Campos incompletos</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">O PPC pode ser salvo, mas os itens abaixo estão ausentes.</p>
             </div>
         </div>
-        <div class="flex justify-end">
+        <div class="flex justify-end gap-3 mt-2">
             <button type="button" id="btn-fechar-validacao"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
-                Entendido
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400">
+                Corrigir
+            </button>
+            <button type="button" id="btn-enviar-mesmo-assim"
+                class="px-4 py-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                Enviar mesmo assim
             </button>
         </div>
     </div>
