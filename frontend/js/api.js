@@ -1,54 +1,155 @@
 /**
- * api.js — Integração com o backend dos colegas (PPCPayload)
+ * api.js — Cliente para integração com a API PPC
  *
- * O backend espera UM único POST /api/ppc com esse formato:
- * {
- * "ppc": { ...dados do curso... },
- * "membros": [...],
- * "coordenacao": {...},
- * "docentes": [...],
- * "componentes": [...],
- * "ambientes": [...]
- * }
- *
- * Como usar:
- * Adicione no final do forms.html, antes de </body>:
- * <script src="js/api.js"></script>
+ * Fornece funções para:
+ *   - Listar PPCs (GET /api/ppc)
+ *   - Criar PPC (POST /api/ppc)
+ *   - Buscar PPC por ID (GET /api/ppc/{id})
+ *   - Atualizar PPC (PUT /api/ppc/{id})
+ *   - Deletar PPC (DELETE /api/ppc/{id})
  */
 
 const API_BASE = 'http://localhost:8000/api';
 
-// ─────────────────────────────────────────────────────────────
-// Estado local — acumula os dados enquanto o usuário preenche
-// ─────────────────────────────────────────────────────────────
-
-const estadoPPC = {
-  componentes: [],   // preenchidos no Card de componentes
-  membros:     [],   // preenchidos no Card de membros
-  docentes:    [],   // preenchidos no Card de docentes
-  ambientes:   [],   // preenchidos no Card de infraestrutura
-};
-
-// ─────────────────────────────────────────────────────────────
-// Utilitários de Extração e Interface
-// ─────────────────────────────────────────────────────────────
-
-function obterTexto(id) {
-  return document.getElementById(id)?.value?.trim() || null;
-}
-
-function obterNumero(id) {
-  const valor = parseInt(document.getElementById(id)?.value);
-  return isNaN(valor) ? null : valor;
-}
-
+/**
+ * Exibe notificação na tela
+ * @param {string} mensagem - Texto da notificação
+ * @param {string} tipo - 'sucesso' | 'erro' | 'info'
+ */
 function exibirNotificacao(mensagem, tipo = 'sucesso') {
-  const cores = { sucesso: 'bg-green-600', erro: 'bg-red-600', info: 'bg-blue-600' };
+  const cores = { 
+    sucesso: 'bg-green-600', 
+    erro: 'bg-red-600', 
+    info: 'bg-blue-600' 
+  };
   const notificacao = document.createElement('div');
   notificacao.className = `fixed top-4 right-4 z-50 px-5 py-3 rounded shadow-lg text-white text-sm font-medium transition-all ${cores[tipo]}`;
   notificacao.textContent = mensagem;
   document.body.appendChild(notificacao);
   setTimeout(() => notificacao.remove(), 3500);
+}
+
+/**
+ * Realiza uma requisição HTTP com tratamento de erro
+ * @param {string} url - URL da requisição
+ * @param {Object} opcoes - Opções do fetch
+ * @returns {Promise<Object>} - Dados da resposta
+ */
+async function requisicaoAPI(url, opcoes = {}) {
+  try {
+    const resposta = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...opcoes.headers
+      },
+      ...opcoes
+    });
+
+    if (!resposta.ok) {
+      const erro = await resposta.json().catch(() => ({}));
+      const mensagemErro = erro.detail || `Erro ${resposta.status}`;
+      throw new Error(mensagemErro);
+    }
+
+    return await resposta.json();
+  } catch (erro) {
+    console.error('Erro na requisição:', erro);
+    throw erro;
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// OPERAÇÕES CRUD
+// ════════════════════════════════════════════════════════════
+
+/**
+ * Lista todos os PPCs cadastrados
+ * @returns {Promise<Array>} - Lista de PPCs
+ */
+async function listarPPCs() {
+  try {
+    const dados = await requisicaoAPI(`${API_BASE}/ppc`);
+    return dados;
+  } catch (erro) {
+    console.error('Erro ao listar PPCs:', erro);
+    exibirNotificacao('Erro ao carregar PPCs', 'erro');
+    return [];
+  }
+}
+
+/**
+ * Cria um novo PPC
+ * @param {Object} payload - Dados do PPC
+ * @returns {Promise<Object>} - PPC criado
+ */
+async function criarPPC(payload) {
+  try {
+    const dados = await requisicaoAPI(`${API_BASE}/ppc`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    exibirNotificacao('PPC criado com sucesso!', 'sucesso');
+    return dados;
+  } catch (erro) {
+    console.error('Erro ao criar PPC:', erro);
+    exibirNotificacao(`Erro: ${erro.message}`, 'erro');
+    throw erro;
+  }
+}
+
+/**
+ * Busca um PPC específico por ID
+ * @param {string} id - ID do PPC
+ * @returns {Promise<Object>} - Dados do PPC
+ */
+async function obterPPC(id) {
+  try {
+    const dados = await requisicaoAPI(`${API_BASE}/ppc/${id}`);
+    return dados;
+  } catch (erro) {
+    console.error(`Erro ao obter PPC ${id}:`, erro);
+    exibirNotificacao('Erro ao carregar PPC', 'erro');
+    throw erro;
+  }
+}
+
+/**
+ * Atualiza um PPC existente
+ * @param {string} id - ID do PPC
+ * @param {Object} payload - Dados atualizados
+ * @returns {Promise<Object>} - PPC atualizado
+ */
+async function atualizarPPC(id, payload) {
+  try {
+    const dados = await requisicaoAPI(`${API_BASE}/ppc/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    exibirNotificacao('PPC atualizado com sucesso!', 'sucesso');
+    return dados;
+  } catch (erro) {
+    console.error(`Erro ao atualizar PPC ${id}:`, erro);
+    exibirNotificacao(`Erro: ${erro.message}`, 'erro');
+    throw erro;
+  }
+}
+
+/**
+ * Deleta um PPC
+ * @param {string} id - ID do PPC
+ * @returns {Promise<void>}
+ */
+async function deletarPPC(id) {
+  try {
+    await requisicaoAPI(`${API_BASE}/ppc/${id}`, {
+      method: 'DELETE'
+    });
+    exibirNotificacao('PPC deletado com sucesso!', 'sucesso');
+  } catch (erro) {
+    console.error(`Erro ao deletar PPC ${id}:`, erro);
+    exibirNotificacao(`Erro: ${erro.message}`, 'erro');
+    throw erro;
+  }
 }
 
 function alternarLoadingBotao(botao, estaCarregando) {
