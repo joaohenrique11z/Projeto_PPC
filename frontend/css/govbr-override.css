@@ -1,0 +1,680 @@
+/* ================================================================== */
+/* DESIGN SYSTEM GOV.BR - PADRÃO DIGITAL DE GOVERNO                   */
+/* Override Layer para Tailwind CSS                                    */
+/* ================================================================== */
+
+/* ── Import da Tipografia Oficial GOV.BR ── */
+@import url('https://cdn.dsgovserprodesign.estaleiro.serpro.gov.br/design-system/fonts/rawline/css/rawline.css');
+
+/* ── CSS Custom Properties (Design Tokens) ── */
+:root {
+  /* Cores Primárias e Institucionais */
+  --blue-50: #2378c3;      /* Base Interativa Primária */
+  --blue-70: #274863;      /* Fundo do Logotipo */
+  --blue-80: #1f303e;      /* Fundos Institucionais (headers, h1, h2) */
+  
+  /* Cores Neutras */
+  --gray-5: #f8f8f8;       /* Superfícies Neutras (Background do Body) */
+  --gray-60: #747474;      /* Bordas de inputs e elementos secundários */
+  --gray-80: #333333;      /* Texto secundário */
+  --pure-0: #ffffff;       /* Superfícies de Cartões/Painéis */
+  
+  /* Outras cores funcionais */
+  --red-error: #d32f2f;    /* Erros e ações destrutivas */
+  --green-success: #2e7d32; /* Sucesso */
+  --yellow-warning: #f57c00; /* Avisos */
+  --gray-200: #e0e0e0;     /* Bordas leves */
+}
+
+/* ── Dark Mode ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gray-5: #121212;
+    --pure-0: #1e1e1e;
+    --gray-80: #e0e0e0;
+  }
+}
+
+/* ================================================================== */
+/* TIPOGRAFIA - FONT FAMILY RAWLINE                                   */
+/* ================================================================== */
+
+html,
+body {
+  font-family: 'rawline', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Headlines (H1, H2, H3, H4, H5, H6) ── */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'rawline', inherit;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* ── Body Text ── */
+body {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #333333;
+}
+
+/* ================================================================== */
+/* BACKGROUND E CORES DE SUPERFÍCIE                                   */
+/* ================================================================== */
+
+body {
+  background-color: var(--gray-5);
+}
+
+body.dark {
+  background-color: #121212;
+}
+
+/* Cartões e Painéis */
+.bg-white,
+.dark\:bg-gray-800 {
+  background-color: var(--pure-0);
+}
+
+body.dark .dark\:bg-gray-800 {
+  background-color: #1e1e1e;
+}
+
+/* ================================================================== */
+/* HEADER GLOBAL - PADRÃO GOV.BR                                      */
+/* ================================================================== */
+
+header {
+  background-color: var(--pure-0);
+  border-bottom: 2px solid var(--gray-200);
+}
+
+body.dark header {
+  background-color: #1e1e1e;
+  border-bottom-color: #333333;
+}
+
+/* Logo Container */
+header .flex-shrink-0 {
+  background-color: var(--blue-70);
+  border-radius: 6px;
+}
+
+/* Títulos do Header */
+header h1 {
+  color: var(--blue-80);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+header p {
+  color: #757575;
+  font-size: 0.75rem;
+}
+
+body.dark header h1 {
+  color: var(--pure-0);
+}
+
+body.dark header p {
+  color: #9e9e9e;
+}
+
+/* ================================================================== */
+/* SIDEBAR - NAVEGAÇÃO DO PPC                                         */
+/* ================================================================== */
+
+#ppc-sidebar {
+  background-color: var(--pure-0);
+  border-right: 1px solid var(--gray-200);
+}
+
+body.dark #ppc-sidebar {
+  background-color: #1e1e1e;
+  border-right-color: #333333;
+}
+
+/* Título da Sidebar */
+#ppc-sidebar > div:first-child {
+  border-bottom: 1px solid var(--gray-200);
+}
+
+#ppc-sidebar > div:first-child p {
+  color: #757575;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+body.dark #ppc-sidebar > div:first-child {
+  border-bottom-color: #333333;
+}
+
+body.dark #ppc-sidebar > div:first-child p {
+  color: #9e9e9e;
+}
+
+/* Botões de Abas (Tab Buttons) */
+.tab-btn {
+  background-color: var(--pure-0);
+  color: var(--gray-80);
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tab-btn:hover {
+  background-color: #f5f5f5;
+}
+
+body.dark .tab-btn {
+  background-color: #1e1e1e;
+  color: #b0b0b0;
+}
+
+body.dark .tab-btn:hover {
+  background-color: #2a2a2a;
+}
+
+/* Aba Ativa - Estado aria-selected="true" */
+.tab-btn[aria-selected="true"] {
+  background-color: var(--pure-0);
+  color: var(--blue-50);
+  border-left-color: var(--blue-50);
+  border-left-width: 4px;
+  font-weight: 600;
+}
+
+body.dark .tab-btn[aria-selected="true"] {
+  background-color: #1e1e1e;
+  color: var(--blue-50);
+  border-left-color: var(--blue-50);
+}
+
+/* ================================================================== */
+/* TABELAS                                                             */
+/* ================================================================== */
+
+table {
+  font-family: 'rawline', inherit;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid var(--gray-200);
+}
+
+body.dark thead {
+  background-color: #2a2a2a;
+  border-bottom-color: #444444;
+}
+
+th {
+  padding: 0.875rem 1rem;
+  font-weight: 600;
+  color: var(--blue-80);
+  text-align: left;
+}
+
+body.dark th {
+  color: var(--pure-0);
+}
+
+td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  color: #333333;
+}
+
+body.dark td {
+  border-bottom-color: #333333;
+  color: #e0e0e0;
+}
+
+/* ================================================================== */
+/* BOTÕES - ÊNFASE PRIMÁRIA (GOV.BR)                                  */
+/* ================================================================== */
+
+/* Reset de Botões Padrão */
+button {
+  font-family: 'rawline', inherit;
+}
+
+/* Botões Primários */
+.bg-blue-700,
+.hover\:bg-blue-800,
+#btn-novo-ppc,
+#btn-enviar-ppc,
+#btn-confirmar-acao,
+#btn-confirmar-envio {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  background-color: var(--blue-50);
+  color: var(--pure-0);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(35, 120, 195, 0.2);
+}
+
+.bg-blue-700:hover,
+.hover\:bg-blue-800:hover,
+#btn-novo-ppc:hover,
+#btn-enviar-ppc:hover,
+#btn-confirmar-acao:hover,
+#btn-confirmar-envio:hover {
+  background-color: #1d5f9e;
+  box-shadow: 0 4px 8px rgba(29, 95, 158, 0.3);
+  transform: translateY(-1px);
+}
+
+#btn-novo-ppc:focus,
+#btn-enviar-ppc:focus,
+#btn-confirmar-acao:focus,
+#btn-confirmar-envio:focus {
+  outline: 3px solid rgba(35, 120, 195, 0.5);
+  outline-offset: 2px;
+}
+
+/* Botões Secundários (Cancelar) */
+#btn-cancelar-acao,
+#btn-cancelar-envio,
+#btn-cancelar-limpar,
+#btn-cancelar-remover {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.625rem 1.25rem;
+  background-color: var(--pure-0);
+  color: var(--gray-80);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--gray-60);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'rawline', inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#btn-cancelar-acao:hover,
+#btn-cancelar-envio:hover,
+#btn-cancelar-limpar:hover,
+#btn-cancelar-remover:hover {
+  background-color: #f5f5f5;
+  border-color: var(--blue-50);
+}
+
+body.dark #btn-cancelar-acao,
+body.dark #btn-cancelar-envio,
+body.dark #btn-cancelar-limpar,
+body.dark #btn-cancelar-remover {
+  background-color: #1e1e1e;
+  border-color: #444444;
+  color: #e0e0e0;
+}
+
+body.dark #btn-cancelar-acao:hover,
+body.dark #btn-cancelar-envio:hover,
+body.dark #btn-cancelar-limpar:hover,
+body.dark #btn-cancelar-remover:hover {
+  background-color: #2a2a2a;
+  border-color: var(--blue-50);
+}
+
+/* Botões de Ação Destrutiva (Remover/Deletar) */
+#btn-confirmar-remover {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.625rem 1.5rem;
+  background-color: var(--red-error);
+  color: var(--pure-0);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'rawline', inherit;
+  border: none;
+  white-space: nowrap;
+}
+
+#btn-confirmar-remover:hover {
+  background-color: #b71c1c;
+  box-shadow: 0 2px 4px rgba(211, 47, 47, 0.2);
+}
+
+/* ================================================================== */
+/* INPUTS, TEXTAREAS, SELECTS                                         */
+/* ================================================================== */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  font-family: 'rawline', inherit;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: var(--pure-0);
+  border: 1px solid var(--gray-60);
+  border-radius: 4px;
+  color: #333333;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+body.dark input[type="text"],
+body.dark input[type="email"],
+body.dark input[type="password"],
+body.dark input[type="number"],
+body.dark input[type="date"],
+body.dark input[type="tel"],
+body.dark input[type="url"],
+body.dark textarea,
+body.dark select {
+  background-color: #2a2a2a;
+  border-color: #444444;
+  color: #e0e0e0;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--blue-50);
+  box-shadow: 0 0 0 3px rgba(35, 120, 195, 0.1);
+  background-color: #fafafa;
+}
+
+body.dark input[type="text"]:focus,
+body.dark input[type="email"]:focus,
+body.dark input[type="password"]:focus,
+body.dark input[type="number"]:focus,
+body.dark input[type="date"]:focus,
+body.dark input[type="tel"]:focus,
+body.dark input[type="url"]:focus,
+body.dark textarea:focus,
+body.dark select:focus {
+  background-color: #1e1e1e;
+  box-shadow: 0 0 0 3px rgba(35, 120, 195, 0.2);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.5;
+}
+
+/* ================================================================== */
+/* MODAIS                                                             */
+/* ================================================================== */
+
+#modal-acao,
+#modal-limpar,
+#modal-validacao-envio,
+#modal-remover-componente,
+#modal-confirmar-envio {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+#modal-acao > div,
+#modal-limpar,
+#modal-validacao-envio,
+#modal-remover-componente,
+#modal-confirmar-envio > div {
+  background-color: var(--pure-0);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+body.dark #modal-acao > div,
+body.dark #modal-limpar,
+body.dark #modal-validacao-envio,
+body.dark #modal-remover-componente,
+body.dark #modal-confirmar-envio > div {
+  background-color: #1e1e1e;
+  border-color: #333333;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Cabeçalhos de Modais */
+#modal-acao-titulo,
+#modal-acao > div > div:first-child h3 {
+  color: var(--blue-80);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+body.dark #modal-acao-titulo,
+body.dark #modal-acao > div > div:first-child h3 {
+  color: var(--pure-0);
+}
+
+/* ================================================================== */
+/* SEÇÕES E PAINÉIS                                                   */
+/* ================================================================== */
+
+.bg-white {
+  background-color: var(--pure-0);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+}
+
+body.dark .bg-white {
+  background-color: #1e1e1e;
+  border-color: #333333;
+}
+
+/* ================================================================== */
+/* TEXTOS E LABELS                                                    */
+/* ================================================================== */
+
+label {
+  font-family: 'rawline', inherit;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--blue-80);
+  display: block;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+body.dark label {
+  color: var(--pure-0);
+}
+
+/* Textos Secundários */
+.text-gray-600,
+.text-gray-500,
+.text-gray-400 {
+  color: #757575;
+  font-family: 'rawline', inherit;
+}
+
+body.dark .text-gray-600,
+body.dark .text-gray-500,
+body.dark .text-gray-400 {
+  color: #9e9e9e;
+}
+
+/* ================================================================== */
+/* LINKS E ÂNCORAS                                                    */
+/* ================================================================== */
+
+a {
+  color: var(--blue-50);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  color: #1d5f9e;
+  text-decoration: underline;
+}
+
+a:focus {
+  outline: 2px solid var(--blue-50);
+  outline-offset: 2px;
+}
+
+body.dark a {
+  color: #64b5f6;
+}
+
+body.dark a:hover {
+  color: #90caf9;
+}
+
+/* ================================================================== */
+/* RESPONSIVIDADE                                                     */
+/* ================================================================== */
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Previne zoom automático em mobile */
+  }
+}
+
+/* ================================================================== */
+/* ACESSIBILIDADE                                                     */
+/* ================================================================== */
+
+/* Focus visível para navegação por teclado */
+:focus-visible {
+  outline: 3px solid var(--blue-50);
+  outline-offset: 2px;
+}
+
+/* Reduz animações para usuários que preferem movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ================================================================== */
+/* UTILITIES E SOBREPOSIÇÕES                                          */
+/* ================================================================== */
+
+/* Sobrepõe Tailwind quando necessário */
+.border-b {
+  border-bottom-color: var(--gray-200);
+}
+
+body.dark .border-b {
+  border-bottom-color: #333333;
+}
+
+.border-r {
+  border-right-color: var(--gray-200);
+}
+
+body.dark .border-r {
+  border-right-color: #333333;
+}
+
+/* Contêiners de conteúdo */
+main {
+  background-color: var(--gray-5);
+}
+
+body.dark main {
+  background-color: #121212;
+}
+
+/* Estado vazio */
+#ppc-empty-state {
+  color: #757575;
+}
+
+body.dark #ppc-empty-state {
+  color: #9e9e9e;
+}
+
+/* Animação suave */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

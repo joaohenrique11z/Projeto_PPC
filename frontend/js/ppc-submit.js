@@ -158,8 +158,38 @@
                 throw new Error(errData.detail || `Erro HTTP ${response.status}`);
             }
 
-            // Sucesso — redireciona para a listagem
-            window.location.href = 'index.html';
+            // Sucesso — mostrar feedback visual na mesma tela
+            // Fecha o modal de confirmação (se existir)
+            const modal = document.getElementById('modal-confirmar-envio');
+            if (modal) modal.classList.add('hidden');
+
+            // Exibe um toast simples no canto superior direito
+            (function showSuccessToast() {
+                let toast = document.getElementById('ppc-success-alert');
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.id = 'ppc-success-alert';
+                    toast.className = 'fixed top-4 right-4 z-50 px-4 py-2 bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100 rounded-lg shadow-lg fade-in';
+                    toast.textContent = 'PPC enviado com sucesso!';
+                    document.body.appendChild(toast);
+                } else {
+                    toast.classList.remove('hidden');
+                    toast.textContent = 'PPC enviado com sucesso!';
+                }
+                setTimeout(() => {
+                    toast.remove();
+                }, 4000);
+            })();
+
+            if (btnConfirmar) {
+                btnConfirmar.disabled = false;
+                btnConfirmar.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Confirmar Envio
+                `;
+            }
 
         } catch (error) {
             console.error('[ppc-submit] Erro ao enviar:', error);
