@@ -3,12 +3,12 @@
  * Sistema Gerador de PPC — IFPE Campus Belo Jardim
  *
  * Responsabilidades:
- *  - Carregar lista de PPCs da API
  *  - Renderizar tabela de PPCs
- *  - Criar novo PPC (redireciona para forms.html sem ID)
- *  - Editar PPC (redireciona para forms.html com ID)
- *  - Deletar PPC via API
- *  - Duplicar PPC via API
+ *  - Criar novo PPC
+ *  - Editar PPC (redireciona para forms.html)
+ *  - Deletar PPC
+ *  - Duplicar PPC
+ *  - Persistir dados em localStorage
  */
 
 (function () {
@@ -25,120 +25,99 @@
     const btnCancelarAcao = document.getElementById('btn-cancelar-acao');
 
     let ppcs = [];
-    let acaoModal = null;
-    let ppcIdModal = null;
-    let estaCarregando = false;
+    let acaoModal = null; // Armazena a ação a ser realizada (delete, duplicate, etc.)
+    let ppcIdModal = null; // Armazena o ID do PPC para a ação
 
     /* ================================================================== */
     /* UTILITÁRIOS                                                          */
     /* ================================================================== */
 
     /**
+     * Gera um ID único para um novo PPC
+     */
+    function gerarIdUnco() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    /**
      * Formata uma data para exibição
      */
-    function formatarData(dataISO) {
-        if (!dataISO) return '-';
-        try {
-            const data = new Date(dataISO);
-            return data.toLocaleDateString('pt-BR');
-        } catch {
-            return '-';
-        }
-    }
-
-    /**
-     * Mostra/esconde o loading spinner
-     */
-    function mostrarCarregando(show = true) {
-        estaCarregando = show;
-        if (tbody) {
-            if (show) {
-                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-500">Carregando PPCs...</td></tr>';
-            }
-        }
+    function formatarData(timestamp) {
+        if (!timestamp) return '-';
+        const data = new Date(Number(timestamp));
+        return data.toLocaleDateString('pt-BR');
     }
 
     /* ================================================================== */
-    /* OPERAÇÕES COM API                                                   */
+    /* GERENCIAMENTO DE PPCs                                              */
     /* ================================================================== */
 
     /**
-     * Carrega PPCs da API
+     * Cria um novo PPC vazio
      */
-    async function carregarPPCsDoBackend() {
-        mostrarCarregando(true);
-        try {
-            const dados = await listarPPCs();
-            ppcs = dados || [];
-            renderizarTabela();
-        } catch (erro) {
-            console.error('Erro ao carregar PPCs:', erro);
-            tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-red-500">Erro ao carregar PPCs. Tente novamente.</td></tr>';
-        } finally {
-            mostrarCarregando(false);
-        }
+    function criarNovoPPC() {
+        const novoPPC = {
+            id: gerarIdUnco(),
+            nome: `Novo PPC ${ppcs.length + 1}`,
+            ano: new Date().getFullYear(),
+            status: 'Rascunho',
+            dataCriacao: Date.now(),
+            dataAtualizacao: Date.now(),
+            dados: {} // Armazena os dados do formulário
+        };
+
+        ppcs.push(novoPPC);
+        renderizarTabela();
     }
 
     /**
-     * Edita um PPC existente (redireciona com ID na URL)
+     * Edita um PPC existente
      */
     function editarPPC(id) {
-        const ppc = ppcs.find(p => p.ppc_id === id || p.id === id);
+        const ppc = ppcs.find(p => p.id === id);
         if (!ppc) {
-            exibirNotificacao('PPC não encontrado', 'erro');
+            console.error('PPC não encontrado');
             return;
         }
 
+        // Armazena o PPC atual em sessionStorage para recuperar em forms.html
+        sessionStorage.setItem('ppc_atual', JSON.stringify(ppc));
+
+        // Redireciona para o formulário
         window.location.href = `forms.html?id=${id}`;
     }
 
     /**
-     * Mostra confirmação para deletar
+     * Mostra o modal de confirmação para deletar um PPC
      */
     function confirmarDeleta(id) {
-        const ppc = ppcs.find(p => p.ppc_id === id || p.id === id);
+        const ppc = ppcs.find(p => p.id === id);
         if (!ppc) return;
 
         acaoModal = 'delete';
         ppcIdModal = id;
 
         modalTitulo.textContent = 'Deletar PPC?';
-        const nome = ppc.nome_curso || ppc.nome || 'Este PPC';
-        modalMensagem.textContent = `Tem certeza que deseja deletar "${nome}"? Esta ação não pode ser desfeita.`;
+        modalMensagem.textContent = `Tem certeza que deseja deletar "${ppc.nome}"? Esta ação não pode ser desfeita.`;
         btnConfirmarAcao.textContent = 'Deletar';
-        btnConfirmarAcao.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        btnConfirmarAcao.classList.remove('bg-red-600', 'hover:bg-red-700');
         btnConfirmarAcao.classList.add('bg-red-600', 'hover:bg-red-700');
 
         modalAcao.classList.remove('hidden');
     }
 
     /**
-     * Deleta um PPC via API
-     */
-    async function deletarPPCViaAPI(id) {
-        try {
-            await deletarPPC(id);
-            ppcs = ppcs.filter(p => p.ppc_id !== id && p.id !== id);
-            renderizarTabela();
-        } catch (erro) {
-            exibirNotificacao('Erro ao deletar PPC', 'erro');
-            console.error(erro);
-        }
-    }
-
-    /**
-     * Mostra confirmação para duplicar
+     * Mostra o modal de confirmação para duplicar um PPC
      */
     function confirmarDuplica(id) {
-        const ppc = ppcs.find(p => p.ppc_id === id || p.id === id);
+        const ppc = ppcs.find(p => p.id === id);
         if (!ppc) return;
 
         acaoModal = 'duplicate';
         ppcIdModal = id;
 
         modalTitulo.textContent = 'Duplicar PPC?';
-        const nome = ppc.nome_curso || ppc.nome || 'Este PPC';
-        modalMensagem.textContent = `Deseja duplicar "${nome}"? Uma cópia será criada.`;
+        modalMensagem.textContent = `Deseja duplicar "${ppc.nome}"? Uma cópia será criada com o sufixo "(Cópia)".`;
         btnConfirmarAcao.textContent = 'Duplicar';
         btnConfirmarAcao.classList.remove('bg-red-600', 'hover:bg-red-700');
         btnConfirmarAcao.classList.add('bg-blue-600', 'hover:bg-blue-700');
@@ -147,12 +126,30 @@
     }
 
     /**
-     * Duplica um PPC (busca todos os dados e cria novo)
-     * TODO: Implementar endpoint de duplicação no backend
+     * Deleta um PPC
      */
-    async function duplicarPPC(id) {
-        exibirNotificacao('Funcionalidade de duplicação em desenvolvimento', 'info');
-        // Futura implementação: chamar endpoint de duplicação
+    function deletarPPC(id) {
+        ppcs = ppcs.filter(p => p.id !== id);
+        renderizarTabela();
+    }
+
+    /**
+     * Duplica um PPC
+     */
+    function duplicarPPC(id) {
+        const ppc = ppcs.find(p => p.id === id);
+        if (!ppc) return;
+
+        const copia = {
+            ...ppc,
+            id: gerarIdUnco(),
+            nome: `${ppc.nome} (Cópia)`,
+            dataCriacao: Date.now(),
+            dataAtualizacao: Date.now()
+        };
+
+        ppcs.push(copia);
+        renderizarTabela();
     }
 
     /* ================================================================== */
@@ -160,7 +157,7 @@
     /* ================================================================== */
 
     /**
-     * Renderiza a tabela de PPCs carregados da API
+     * Renderiza a tabela de PPCs
      */
     function renderizarTabela() {
         tbody.innerHTML = '';
@@ -180,46 +177,45 @@
             const tdClassHidden = 'px-4 py-3 dark:text-gray-300 hidden sm:table-cell';
             const tdClassMd = 'px-4 py-3 dark:text-gray-300 hidden md:table-cell';
 
-            const ppcId = ppc.ppc_id || ppc.id;
-            const nomeCurso = ppc.nome_curso || ppc.nome || 'Sem nome';
-            const status = ppc.status_curso || 'Ativo';
-            const dataAtualizacao = ppc.data_ultima_atualizacao || ppc.dataAtualizacao;
-
             const td1 = document.createElement('td');
             td1.className = tdClass;
             const btnNome = document.createElement('button');
             btnNome.type = 'button';
             btnNome.className = 'btn-editar-nome text-blue-600 hover:text-blue-800 font-medium';
-            btnNome.dataset.id = ppcId;
-            btnNome.textContent = nomeCurso;
+            btnNome.dataset.id = ppc.id;
+            btnNome.textContent = ppc.nome;
             td1.appendChild(btnNome);
 
             const td2 = document.createElement('td');
             td2.className = tdClassHidden;
-            td2.textContent = ppc.area_conhecimento || '-';
+            td2.textContent = ppc.ano;
 
             const td3 = document.createElement('td');
             td3.className = tdClass;
             const spanStatus = document.createElement('span');
-            spanStatus.className = `inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300`;
-            spanStatus.textContent = status;
+            spanStatus.className = `inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
+                ppc.status === 'Rascunho'
+                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                    : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+            }`;
+            spanStatus.textContent = ppc.status;
             td3.appendChild(spanStatus);
 
             const td4 = document.createElement('td');
             td4.className = tdClassMd;
-            td4.textContent = formatarData(dataAtualizacao);
+            td4.textContent = formatarData(ppc.dataAtualizacao);
 
             const td5 = document.createElement('td');
             td5.className = 'px-4 py-3 text-center';
             td5.innerHTML = `
                 <div class="flex gap-2 justify-center flex-wrap">
-                    <button type="button" class="btn-editar text-blue-600 hover:text-blue-800 text-xs font-medium" data-id="${ppcId}">
+                    <button type="button" class="btn-editar text-blue-600 hover:text-blue-800 text-xs font-medium" data-id="${ppc.id}">
                         Editar
                     </button>
-                    <button type="button" class="btn-duplicar text-green-600 hover:text-green-800 text-xs font-medium" data-id="${ppcId}">
+                    <button type="button" class="btn-duplicar text-green-600 hover:text-green-800 text-xs font-medium" data-id="${ppc.id}">
                         Duplicar
                     </button>
-                    <button type="button" class="btn-deletar text-red-600 hover:text-red-800 text-xs font-medium" data-id="${ppcId}">
+                    <button type="button" class="btn-deletar text-red-600 hover:text-red-800 text-xs font-medium" data-id="${ppc.id}">
                         Deletar
                     </button>
                 </div>
@@ -234,7 +230,7 @@
             tbody.appendChild(tr);
         });
 
-        // Registra event listeners
+        // Registra listeners
         document.querySelectorAll('.btn-editar').forEach(btn => {
             btn.addEventListener('click', () => editarPPC(btn.dataset.id));
         });
@@ -256,11 +252,10 @@
     /* EVENT LISTENERS                                                     */
     /* ================================================================== */
 
-    // Botão "Novo PPC" - redireciona para forms.html sem ID (novo PPC)
+    // Botão "Novo PPC" - cria um novo PPC
     if (btnNovoPPC) {
-        btnNovoPPC.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = 'forms.html';
+        btnNovoPPC.addEventListener('click', () => {
+            criarNovoPPC();
         });
     }
 
@@ -268,7 +263,7 @@
     if (btnCriarPPCVazio) {
         btnCriarPPCVazio.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'forms.html';
+            criarNovoPPC();
         });
     }
 
@@ -281,7 +276,7 @@
 
     btnConfirmarAcao.addEventListener('click', () => {
         if (acaoModal === 'delete') {
-            deletarPPCViaAPI(ppcIdModal);
+            deletarPPC(ppcIdModal);
         } else if (acaoModal === 'duplicate') {
             duplicarPPC(ppcIdModal);
         }
@@ -304,7 +299,7 @@
     /* INICIALIZAÇÃO                                                       */
     /* ================================================================== */
 
-    docucarregarPPCsDoBackendtener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
         renderizarTabela();
     });
 
