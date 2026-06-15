@@ -104,7 +104,58 @@
     /* ================================================================== */
 
     /**
-     * Cria um novo PPC vazio
+     * Cria um novo PPC no banco de dados via API
+     * Aguarda a resposta e atualiza a lista
+     */
+    async function criarNovoPPCViaAPI() {
+        try {
+            alternarLoadingBotao(btnNovoPPC, true);
+
+            const response = await fetch(`${API_BASE}/ppc/novo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    nome_curso: `Novo PPC ${ppcs.length + 1}`
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao criar PPC: ${response.status}`);
+            }
+
+            const novoPPC = await response.json();
+
+            // Mapeia o PPC retornado da API para o formato interno
+            const ppcFormatado = {
+                id: novoPPC.id,
+                nome: novoPPC.nome_curso || 'PPC sem nome',
+                ano: new Date(novoPPC.data_ultima_atualizacao || new Date()).getFullYear(),
+                status: novoPPC.status_curso || 'Rascunho',
+                dataCriacao: converterDataParaTimestamp(novoPPC.data_criacao),
+                dataAtualizacao: converterDataParaTimestamp(novoPPC.data_ultima_atualizacao),
+                dados: {}
+            };
+
+            // Adiciona o PPC à lista
+            ppcs.unshift(ppcFormatado); // Adiciona no início da lista
+            renderizarTabela();
+
+            exibirNotificacao('PPC criado com sucesso!', 'sucesso');
+            console.log('Novo PPC criado:', ppcFormatado);
+
+        } catch (erro) {
+            console.error('Erro ao criar PPC via API:', erro);
+            exibirNotificacao('Erro ao criar PPC', 'erro');
+        } finally {
+            alternarLoadingBotao(btnNovoPPC, false);
+        }
+    }
+
+    /**
+     * Cria um novo PPC vazio (DEPRECATED - usar criarNovoPPCViaAPI)
+     * Mantido para compatibilidade, mas não é mais usado
      */
     function criarNovoPPC() {
         const novoPPC = {
@@ -303,10 +354,10 @@
     /* EVENT LISTENERS                                                     */
     /* ================================================================== */
 
-    // Botão "Novo PPC" - cria um novo PPC
+    // Botão "Novo PPC" - cria um novo PPC via API
     if (btnNovoPPC) {
         btnNovoPPC.addEventListener('click', () => {
-            criarNovoPPC();
+            criarNovoPPCViaAPI();
         });
     }
 
@@ -314,7 +365,7 @@
     if (btnCriarPPCVazio) {
         btnCriarPPCVazio.addEventListener('click', (e) => {
             e.preventDefault();
-            criarNovoPPC();
+            criarNovoPPCViaAPI();
         });
     }
 
