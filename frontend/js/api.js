@@ -1,274 +1,55 @@
 /**
- * api.js — Cliente para integração com a API PPC
+ * api.js — Integração com o backend dos colegas (PPCPayload)
  *
- * Fornece funções para:
- *   - Listar PPCs (GET /api/ppc)
- *   - Criar PPC (POST /api/ppc)
- *   - Buscar PPC por ID (GET /api/ppc/{id})
- *   - Atualizar PPC (PUT /api/ppc/{id})
- *   - Deletar PPC (DELETE /api/ppc/{id})
+ * O backend espera UM único POST /api/ppc com esse formato:
+ * {
+ * "ppc": { ...dados do curso... },
+ * "membros": [...],
+ * "coordenacao": {...},
+ * "docentes": [...],
+ * "componentes": [...],
+ * "ambientes": [...]
+ * }
+ *
+ * Como usar:
+ * Adicione no final do forms.html, antes de </body>:
+ * <script src="js/api.js"></script>
  */
 
 const API_BASE = 'http://localhost:8000/api';
 
-/**
- * Exibe notificação na tela
- * @param {string} mensagem - Texto da notificação
- * @param {string} tipo - 'sucesso' | 'erro' | 'info'
- */
+// ─────────────────────────────────────────────────────────────
+// Estado local — acumula os dados enquanto o usuário preenche
+// ─────────────────────────────────────────────────────────────
+
+const estadoPPC = {
+  componentes: [],   // preenchidos no Card de componentes
+  membros:     [],   // preenchidos no Card de membros
+  docentes:    [],   // preenchidos no Card de docentes
+  ambientes:   [],   // preenchidos no Card de infraestrutura
+};
+
+// ─────────────────────────────────────────────────────────────
+// Utilitários de Extração e Interface
+// ─────────────────────────────────────────────────────────────
+
+function obterTexto(id) {
+  return document.getElementById(id)?.value?.trim() || null;
+}
+
+function obterNumero(id) {
+  const valor = parseInt(document.getElementById(id)?.value);
+  return isNaN(valor) ? null : valor;
+}
+
 function exibirNotificacao(mensagem, tipo = 'sucesso') {
-  const cores = { 
-    sucesso: 'bg-green-600', 
-    erro: 'bg-red-600', 
-    info: 'bg-blue-600' 
-  };
+  const cores = { sucesso: 'bg-green-600', erro: 'bg-red-600', info: 'bg-blue-600' };
   const notificacao = document.createElement('div');
   notificacao.className = `fixed top-4 right-4 z-50 px-5 py-3 rounded shadow-lg text-white text-sm font-medium transition-all ${cores[tipo]}`;
   notificacao.textContent = mensagem;
   document.body.appendChild(notificacao);
   setTimeout(() => notificacao.remove(), 3500);
 }
-
-/**
- * Realiza uma requisição HTTP com tratamento de erro
- * @param {string} url - URL da requisição
- * @param {Object} opcoes - Opções do fetch
- * @returns {Promise<Object>} - Dados da resposta
- */
-async function requisicaoAPI(url, opcoes = {}) {
-  try {
-    const resposta = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...opcoes.headers
-      },
-      ...opcoes
-    });
-
-    if (!resposta.ok) {
-      const erro = await resposta.json().catch(() => ({}));
-      const mensagemErro = erro.detail || `Erro ${resposta.status}`;
-      throw new Error(mensagemErro);
-    }
-
-    return await resposta.json();
-  } catch (erro) {
-    console.error('Erro na requisição:', erro);
-    throw erro;
-  }
-}
-
-// ════════════════════════════════════════════════════════════
-// OPERAÇÕES CRUD
-// ════════════════════════════════════════════════════════════
-
-/**
- * Lista todos os PPCs cadastrados
- * @returns {Promise<Array>} - Lista de PPCs
- */
-async function listarPPCs() {
-  try {
-    const dados = await requisicaoAPI(`${API_BASE}/ppc`);
-    return dados;
-  } catch (erro) {
-    console.error('Erro ao listar PPCs:', erro);
-    exibirNotificacao('Erro ao carregar PPCs', 'erro');
-    return [];
-  }
-}
-
-/**
- * Cria um novo PPC
- * @param {Object} payload - Dados do PPC
- * @returns {Promise<Object>} - PPC criado
- */
-async function criarPPC(payload) {
-  try {
-    const dados = await requisicaoAPI(`${API_BASE}/ppc`, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-    exibirNotificacao('PPC criado com sucesso!', 'sucesso');
-    return dados;
-  } catch (erro) {
-    console.error('Erro ao criar PPC:', erro);
-    exibirNotificacao(`Erro: ${erro.message}`, 'erro');
-    throw erro;
-  }
-}
-
-/**
- * Busca um PPC específico por ID
- * @param {string} id - ID do PPC
- * @returns {Promise<Object>} - Dados do PPC
- */
-async function obterPPC(id) {
-  try {
-    const dados = await requisicaoAPI(`${API_BASE}/ppc/${id}`);
-    return dados;
-  } catch (erro) {
-    console.error(`Erro ao obter PPC ${id}:`, erro);
-    exibirNotificacao('Erro ao carregar PPC', 'erro');
-    throw erro;
-  }
-}
-
-/**
- * Atualiza um PPC existente
- * @param {string} id - ID do PPC
- * @param {Object} payload - Dados atualizados
- * @returns {Promise<Object>} - PPC atualizado
- */
-async function atualizarPPC(id, payload) {
-  try {
-    const dados = await requisicaoAPI(`${API_BASE}/ppc/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(payload)
-    });
-    exibirNotificacao('PPC atualizado com sucesso!', 'sucesso');
-    return dados;
-  } catch (erro) {
-    console.error(`Erro ao atualizar PPC ${id}:`, erro);
-    exibirNotificacao(`Erro: ${erro.message}`, 'erro');
-    throw erro;
-  }
-}
-
-/**
- * Deleta um PPC
- * @param {string} id - ID do PPC
- * @returns {Promise<void>}
- */
-async function deletarPPC(id) {
-  try {
-    await requisicaoAPI(`${API_BASE}/ppc/${id}`, {
-      method: 'DELETE'
-    });
-    exibirNotificacao('PPC deletado com sucesso!', 'sucesso');
-  } catch (erro) {
-    console.error(`Erro ao deletar PPC ${id}:`, erro);
-    exibirNotificacao(`Erro: ${erro.message}`, 'erro');
-    throw erro;
-  }
-}
-
-/**
- * Carrega todos os dados de um PPC (main + componentes + membros + docentes + ambientes)
- * @param {string} ppcId - ID do PPC
- * @returns {Promise<Object>} - Objeto com todos os dados agrupados
- */
-async function obterPPCCompleto(ppcId) {
-  try {
-    const [ppc, componentes, membros, docentes, ambientes] = await Promise.all([
-      requisicaoAPI(`${API_BASE}/ppc/${ppcId}`),
-      requisicaoAPI(`${API_BASE}/ppc/${ppcId}/componentes`).catch(() => []),
-      requisicaoAPI(`${API_BASE}/ppc/${ppcId}/membros`).catch(() => []),
-      requisicaoAPI(`${API_BASE}/ppc/${ppcId}/docentes`).catch(() => []),
-      requisicaoAPI(`${API_BASE}/ppc/${ppcId}/ambientes`).catch(() => [])
-    ]);
-
-    return {
-      ppc: ppc.data || ppc,
-      componentes: componentes.data || componentes || [],
-      membros: membros.data || membros || [],
-      docentes: docentes.data || docentes || [],
-      ambientes: ambientes.data || ambientes || []
-    };
-  } catch (erro) {
-    console.error(`Erro ao carregar PPC completo ${ppcId}:`, erro);
-    exibirNotificacao('Erro ao carregar dados do PPC', 'erro');
-    throw erro;
-  }
-}
-
-// ─────────────────────────────────────────────────────────────
-// Utilitários para popular formulário
-// ─────────────────────────────────────────────────────────────
-
-/**
- * Define o valor de um campo de input
- */
-function definirValorCampo(id, valor) {
-  const campo = document.getElementById(id);
-  if (campo) {
-    if (campo.type === 'checkbox') {
-      campo.checked = valor === true || valor === 'true' || valor === 1;
-    } else if (campo.type === 'radio') {
-      document.querySelector(`input[name="${campo.name}"][value="${valor}"]`)?.setAttribute('checked', 'checked');
-    } else {
-      campo.value = valor || '';
-    }
-  }
-}
-
-/**
- * Obtém o valor de um campo (inversa de obterTexto/obterNumero)
- */
-function obterValorCampo(id) {
-  const campo = document.getElementById(id);
-  if (!campo) return null;
-  
-  if (campo.type === 'checkbox') return campo.checked;
-  if (campo.type === 'number') return Number(campo.value) || null;
-  return campo.value || null;
-}
-
-/**
- * Preenche o formulário principal com dados do PPC
- */
-function preencherFormularioPrincipal(dadosPPC) {
-  if (!dadosPPC) return;
-
-  // Mapeamento de campo -> ID do HTML (inversa de mapearFormularioPPC)
-  const mapeamento = {
-    campus_name: 'campus_name',
-    cnpj: 'cnpj',
-    cep: 'cep',
-    cidade: 'cidade',
-    bairro: 'bairro',
-    rua: 'rua',
-    numero: 'numero',
-    telefone_fax: 'telefone_fax',
-    email_contato: 'email_contato',
-    ato_legal: 'ato_legal',
-    sitio_web: 'sitio',  // ou sitio_web
-    nome_curso: 'nome_curso',
-    area_conhecimento: 'eixo_tecnologico',
-    nivel: 'tipo_curso',
-    modalidade_curso: 'modalidade_curso',
-    titulacao: 'titulacao',
-    atividades_complementares: 'atividades_complementares',
-    integralizacao_min_semestres: 'integralizacao_min_semestres',
-    integralizacao_max_semestres: 'integralizacao_max_semestres',
-    formas_acesso: 'formas_acesso',
-    pre_requisito_ingresso: 'pre_requisito_ingresso',
-    vagas_anuais: 'vagas_semestre',  // ou vagas_anuais
-    vagas_turno: 'vagas_turno',
-    turnos: 'turnos',
-    regime_matricula: 'regime',  // ou regime_matricula
-    semanas_letivas: 'semanas_letivas',
-    ch_extensao: 'ch_estagio',  // ou ch_extensao
-    conceito_cc: 'conceito_cc',
-    conceito_cpc: 'conceito_cpc',
-    conceito_enade: 'conceito_enade',
-    igc: 'igc',
-    tipo_reformulacao: 'situacao_curso',  // ou tipo_reformulacao
-    status_curso: 'status_curso',
-    ch_total_relogio: 'ch_total_relogio',
-    ch_total_aula: 'ch_total_aula',
-    duracao_aula_minutos: 'duracao_aula_minutos'
-  };
-
-  // Preenche cada campo
-  for (const [chave, idHTML] of Object.entries(mapeamento)) {
-    if (dadosPPC.hasOwnProperty(chave)) {
-      definirValorCampo(idHTML, dadosPPC[chave]);
-    }
-  }
-}
-//     throw erro;
-//   }
-// }
 
 function alternarLoadingBotao(botao, estaCarregando) {
   if (!botao) return;
