@@ -154,6 +154,51 @@
     }
 
     /**
+     * Duplica um PPC no banco de dados via API
+     * Aguarda a resposta e atualiza a lista
+     */
+    async function duplicarPPCViaAPI(id) {
+        try {
+            // Pode opcionalmente mostrar loading em algum lugar
+            // alert("Duplicando PPC...");
+            const response = await fetch(`${API_BASE}/ppc/${id}/duplicar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao duplicar PPC: ${response.status}`);
+            }
+
+            const ppcDuplicado = await response.json();
+
+            // Mapeia o PPC retornado da API para o formato interno
+            const ppcFormatado = {
+                id: ppcDuplicado.id,
+                nome: ppcDuplicado.nome_curso || 'PPC sem nome',
+                ano: new Date(ppcDuplicado.data_ultima_atualizacao || new Date()).getFullYear(),
+                status: ppcDuplicado.status_curso || 'Rascunho',
+                dataCriacao: converterDataParaTimestamp(ppcDuplicado.data_criacao),
+                dataAtualizacao: converterDataParaTimestamp(ppcDuplicado.data_ultima_atualizacao),
+                dados: {}
+            };
+
+            // Adiciona o PPC à lista
+            ppcs.unshift(ppcFormatado); // Adiciona no início da lista
+            renderizarTabela();
+
+            exibirNotificacao('PPC duplicado com sucesso!', 'sucesso');
+            console.log('PPC duplicado:', ppcFormatado);
+
+        } catch (erro) {
+            console.error('Erro ao duplicar PPC via API:', erro);
+            exibirNotificacao('Erro ao duplicar PPC', 'erro');
+        }
+    }
+
+    /**
      * Cria um novo PPC vazio (DEPRECATED - usar criarNovoPPCViaAPI)
      * Mantido para compatibilidade, mas não é mais usado
      */
@@ -380,7 +425,7 @@
         if (acaoModal === 'delete') {
             deletarPPC(ppcIdModal);
         } else if (acaoModal === 'duplicate') {
-            duplicarPPC(ppcIdModal);
+            duplicarPPCViaAPI(ppcIdModal);
         }
 
         modalAcao.classList.add('hidden');
