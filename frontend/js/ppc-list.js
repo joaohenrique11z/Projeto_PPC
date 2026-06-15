@@ -14,7 +14,6 @@
 (function () {
     'use strict';
 
-    const STORAGE_KEY = 'ppcs';
     const tbody = document.getElementById('ppc-table-body');
     const emptyState = document.getElementById('ppc-empty-state');
     const btnNovoPPC = document.getElementById('btn-novo-ppc');
@@ -30,32 +29,8 @@
     let ppcIdModal = null; // Armazena o ID do PPC para a ação
 
     /* ================================================================== */
-    /* UTILITÁRIOS DE ARMAZENAMENTO                                        */
+    /* UTILITÁRIOS                                                          */
     /* ================================================================== */
-
-    /**
-     * Carrega PPCs do localStorage
-     */
-    function carregarPPCs() {
-        try {
-            const dados = localStorage.getItem(STORAGE_KEY);
-            ppcs = dados ? JSON.parse(dados) : [];
-        } catch (e) {
-            console.error('Erro ao carregar PPCs:', e);
-            ppcs = [];
-        }
-    }
-
-    /**
-     * Salva PPCs no localStorage
-     */
-    function salvarPPCs() {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(ppcs));
-        } catch (e) {
-            console.error('Erro ao salvar PPCs:', e);
-        }
-    }
 
     /**
      * Gera um ID único para um novo PPC
@@ -92,7 +67,6 @@
         };
 
         ppcs.push(novoPPC);
-        salvarPPCs();
         renderizarTabela();
     }
 
@@ -156,7 +130,6 @@
      */
     function deletarPPC(id) {
         ppcs = ppcs.filter(p => p.id !== id);
-        salvarPPCs();
         renderizarTabela();
     }
 
@@ -176,7 +149,6 @@
         };
 
         ppcs.push(copia);
-        salvarPPCs();
         renderizarTabela();
     }
 
@@ -328,7 +300,6 @@
     /* ================================================================== */
 
     document.addEventListener('DOMContentLoaded', () => {
-        carregarPPCs();
         renderizarTabela();
     });
 
