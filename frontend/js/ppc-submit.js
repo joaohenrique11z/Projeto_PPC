@@ -126,6 +126,7 @@
 
     /**
      * Envia o payload para a API e trata sucesso/erro.
+     * Detecta automaticamente se é criar (POST) ou atualizar (PUT)
      */
     async function submeterPPC() {
         const btnConfirmar = document.getElementById('btn-confirmar-envio');
@@ -137,7 +138,7 @@
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Enviando...
+                Salvando...
             `;
         }
 
@@ -147,23 +148,37 @@
         console.log('[ppc-submit] Payload a enviar:', JSON.stringify(payload, null, 2));
 
         try {
-            const response = await fetch('http://localhost:8000/api/ppc', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
+            // Detecta modo (edição ou novo)
+            const ppcId = window.ppcLoad?.obterPPCId?.() || document.body.getAttribute('data-ppc-id');
+            const modoEdicao = ppcId !== null && ppcId !== undefined && ppcId !== '';
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.detail || `Erro HTTP ${response.status}`);
+            let resposta;
+
+            if (modoEdicao) {
+                // MODO EDIÇÃO: usa PUT para atualizar
+                console.log('[ppc-submit] Modo: ATUALIZAR (PUT)', ppcId);
+                resposta = await atualizarPPC(ppcId, payload);
+                
+                exibirNotificacao('PPC atualizado com sucesso! Redirecionando...', 'sucesso');
+                
+                // Redireciona após 1.5s
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+            } else {
+                // MODO NOVO: usa POST para criar
+                console.log('[ppc-submit] Modo: CRIAR (POST)');
+                resposta = await criarPPC(payload);
+                
+                // Sucesso — redireciona para a listagem após 1.5s
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
             }
-
-            // Sucesso — redireciona para a listagem
-            window.location.href = 'index.html';
 
         } catch (error) {
             console.error('[ppc-submit] Erro ao enviar:', error);
-            alert(`Ocorreu um erro ao salvar o PPC:\n${error.message}`);
+            exibirNotificacao(`Erro ao salvar: ${error.message}`, 'erro');
 
             if (btnConfirmar) {
                 btnConfirmar.disabled = false;
