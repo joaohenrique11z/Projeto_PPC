@@ -50,6 +50,10 @@ const TAB_FIELD_CHECKS = [
     tabLabel:      "Situação e Avaliação do Curso",
     formSelectors: ["#form-situacao"],
   },
+  {
+    tabLabel:      "Corpo Docente",
+    formSelectors: ["#form-coordenacao"],
+  },
 ];
 
 // IDs of the validation error modal and its close button.
