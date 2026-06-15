@@ -48,6 +48,57 @@
         return data.toLocaleDateString('pt-BR');
     }
 
+    /**
+     * Converte string de data ISO para timestamp numérico
+     */
+    function converterDataParaTimestamp(dataISO) {
+        if (!dataISO) return Date.now();
+        try {
+            return new Date(dataISO).getTime();
+        } catch {
+            return Date.now();
+        }
+    }
+
+    /* ================================================================== */
+    /* CARREGAMENTO DE DADOS DA API                                       */
+    /* ================================================================== */
+
+    /**
+     * Carrega todos os PPCs do banco de dados via API
+     * Executa automaticamente quando a página é carregada
+     */
+    async function carregarPPCsDaAPI() {
+        try {
+            const response = await fetch(`${API_BASE}/ppc`);
+            
+            if (!response.ok) {
+                throw new Error(`Erro ao carregar PPCs: ${response.status}`);
+            }
+
+            const dados = await response.json();
+
+            // Mapeia os dados da API para o formato esperado pelo código
+            ppcs = dados.map(ppc => ({
+                id: ppc.id,
+                nome: ppc.nome_curso || 'PPC sem nome',
+                ano: new Date(ppc.data_ultima_atualizacao || new Date()).getFullYear(),
+                status: ppc.status_curso || 'Rascunho',
+                dataCriacao: converterDataParaTimestamp(ppc.data_criacao),
+                dataAtualizacao: converterDataParaTimestamp(ppc.data_ultima_atualizacao),
+                dados: {} // Dados completos do PPC (carregados quando necessário)
+            }));
+
+            renderizarTabela();
+        } catch (erro) {
+            console.error('Erro ao carregar PPCs da API:', erro);
+            exibirNotificacao('Erro ao carregar lista de PPCs', 'erro');
+            // Renderiza tabela vazia em caso de erro
+            ppcs = [];
+            renderizarTabela();
+        }
+    }
+
     /* ================================================================== */
     /* GERENCIAMENTO DE PPCs                                              */
     /* ================================================================== */
@@ -300,7 +351,8 @@
     /* ================================================================== */
 
     document.addEventListener('DOMContentLoaded', () => {
-        renderizarTabela();
+        // Carrega os PPCs da API automaticamente quando a página é carregada
+        carregarPPCsDaAPI();
     });
 
 })();
