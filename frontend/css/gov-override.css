@@ -1,0 +1,367 @@
+body {
+    background: red !important;
+}
+
+/* =========================================================================================
+   MOLDE CSS PURO - ARQUITETURA DE SOBRESCRITA E ADOÇÃO VISUAL (GOV.BR DESIGN SYSTEM)
+   Projeto Base Refatorado: IFPE Campus Belo Jardim - Sistema de Geração de PPC 
+   Especificação Estrutural de Conformidade: Interceptação e Neutralização Avançada de Frameworks Utilitários
+   ========================================================================================= */
+
+/* -----------------------------------------------------------------------------------------
+   MÓDULO MATRICIAL LÓGICO E ENCAPSULAMENTO DE DESIGN TOKENS GLOBAIS (_tokens.css)
+   Fonte Única da Verdade para Heranças Cromáticas, Dimensionalidades e Densidade Federal
+   ----------------------------------------------------------------------------------------- */
+:root {
+    /* Matriz Primordial de Fundamentos Institucionais de Cores - Variações Rígidas */
+    --blue-90: #11181d;
+    --blue-80: #1f303e;
+    --blue-70: #274863;
+    --blue-60: #2c608a;
+    --blue-50: #2378c3;
+    --blue-40: #4f97d1;
+    --blue-30: #73b3e7;
+    --blue-20: #aacdec;
+    --blue-10: #dbe8fb;
+
+    /* Escala Declarativa de Estados Dinâmicos Interativos e Validações Semânticas Lógicas */
+    --interactive: var(--blue-50);
+    --danger: #e52207;
+    --success: #168821;
+    --warning: #ffcd07;
+    --info: #155bcb;
+
+    /* Base Neutra e Matriz Luminosa de Superfícies Subjacentes do Espaço Arquitetônico */
+    --pure-0: #ffffff;
+    --gray-5: #f8f8f8;
+    --gray-20: #cccccc;
+    --gray-60: #747474;
+    --gray-80: #333333;
+
+    /* Sombreamento Matricial Tridimensional Associado na Malha do Box-Shadow Federal */
+    --surface-opacity-xs: 0.08;
+    --surface-shadow-color: 0, 0, 0;
+    --shadow-primary-elevation: 0px 4px 16px rgba(var(--surface-shadow-color), var(--surface-opacity-xs));
+
+    /* Infraestrutura e Parametrização Base de Pesos e Escalas na Taxonomia Universal Tipográfica */
+    --font-family-base: 'rawline', sans-serif, Arial, Helvetica;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semi-bold: 600;
+    --font-weight-bold: 700;
+    --font-size-scale-down-01: 0.875rem; /* ~14px nativos baseados em escalagem rem root */
+    --font-size-scale-base: 1rem;        /* ~16px leitura normativa linear principal */
+    --font-size-scale-up-01: 1.125rem;   /* ~18px hierarquia secundária proeminente */
+    --font-size-scale-up-02: 1.5rem;     /* ~24px hierarquia de títulos cardeais isolados */
+
+    /* Distanciamento Fundamental Atrelado Dimensionalmente Associado na Múltipla Orquestração Geométrica Padrão (Box Model Respiro) */
+    --spacing-scale-half: 4px;
+    --spacing-scale-base: 8px;
+    --spacing-scale-2x: 16px;
+    --spacing-scale-3x: 24px;
+    --spacing-scale-4x: 32px;
+    --spacing-scale-5x: 40px;
+    --spacing-scale-6x: 48px;
+    --spacing-scale-7x: 56px;
+}
+
+/* -----------------------------------------------------------------------------------------
+   MÓDULO DE IMPORTAÇÃO AUTÔNOMA E OBLITERAÇÃO BASE TIPOGRÁFICA DE REDE E RENDERIZADORES (_typography.css)
+   Requisição Assíncrona Segura de Família de Caracteres Exclusiva Federal por At-Rule
+   ----------------------------------------------------------------------------------------- */
+@import url('https://cdn.dsgovserprodesign.estaleiro.serpro.gov.br/design-system/fonts/rawline/css/rawline.css');
+
+/* Neutralização da Escala Estrutural Global Adjacente sobre todos os componentes acoplados no container Body e descendentes estritos de nós */
+html body[class], 
+html body[class] * {
+    font-family: var(--font-family-base)!important;
+    box-sizing: border-box;
+}
+
+/* Erradicação Agressiva Impeditiva do Sistema Dinâmico Utilitário Oculto Referenciado no Dark Mode do Framework */
+html body[class] {
+    background-color: var(--gray-5)!important;
+    color: var(--gray-80)!important;
+}
+
+/* -----------------------------------------------------------------------------------------
+   ARQUITETURA MACRO E ENGENHARIA DE CABEÇALHO GLOBAL FEDERAL E SEUS ENXERTOS VISUAIS
+   Subplantando utilitários nativos baseados em instâncias originais da árvore de estilos (Header)
+   ----------------------------------------------------------------------------------------- */
+html body[class] header {
+    background-color: var(--pure-0)!important;
+    border-bottom: 1px solid var(--gray-20)!important;
+    box-shadow: 0px 2px 4px rgba(var(--surface-shadow-color), 0.05)!important;
+}
+
+/* Restabelecimento Proporcional sobre Encolhimento Ilegal do Cabeçalho Global Ancestral Primário */
+html body[class] header h1 {
+    color: var(--blue-80)!important;
+    font-weight: var(--font-weight-bold)!important;
+    font-size: var(--font-size-scale-up-01)!important;
+    line-height: 1.9em!important;
+}
+
+/* Reconstrução do Container Gráfico Simbólico e Modulação Curva (Logotipo IFPE em Injeção Retilínea Paramétrica) */
+html body[class] header a.bg-blue-700 {
+    background-color: var(--blue-70)!important;
+    border-radius: 4px!important; /* Convergência restrita sobre cantos nativos suavizados da aplicação */
+}
+
+/* Harmonização do Escopo de Leitura em Marcações Menores para Evitar o Agigantamento do Escopo Superior */
+html body[class] header p {
+    color: var(--blue-60)!important;
+    font-weight: var(--font-weight-regular)!important;
+    font-size: var(--font-size-scale-down-01)!important;
+}
+
+/* Neutralização Funcional Visual do Comutador de Temas Escuros Inertes (Silêncio Operacional sobre Arquitetura Rígida Isoladora) */
+html body[class] #theme-toggle {
+    background-color: var(--gray-20)!important;
+    border: 1px solid var(--gray-80)!important;
+    border-radius: 50px!important;
+}
+
+/* Interceptação Visual na Cortina Modificada do Evento Flutuante Overlay Tridimensional (Inativando Black Hex Code Nativo) */
+html body[class] #mobile-overlay {
+    background-color: rgba(var(--surface-shadow-color), 0.8)!important;
+}
+
+/* -----------------------------------------------------------------------------------------
+   MÓDULO LÓGICO DE ARQUITETURA LATERAL E TRANSIÇÃO INTERATIVA DE ABAS NAVEGÁVEIS (Sidebar & Menu Tabs)
+   Adequação sobre a Rotação de Abas do Fluxo Operante Ancestral via Interceptação Punitiva Baseada em Estados
+   ----------------------------------------------------------------------------------------- */
+/* Invólucro Central da Barra Ocupando Base Branca sem Ruídos Limitadores */
+html body[class] #ppc-sidebar {
+    background-color: var(--pure-0)!important;
+    border-right: 1px solid var(--gray-20)!important;
+}
+
+/* Neutralização Forçada Baseada na Exceção Orgânica Customizada Existente Diretamente no Head e Redirecionamento da Guia Lateral Tátil de Rolagem */
+html body[class] #ppc-sidebar nav::-webkit-scrollbar-thumb,
+html body[class].dark #ppc-sidebar nav::-webkit-scrollbar-thumb {
+    background-color: var(--gray-20)!important;
+    border-radius: 4px!important;
+}
+
+/* Título de Orientação Condicional Modular do Delineamento Subjacente das Guias Laterais Informacionais do Menu */
+html body[class] #ppc-sidebar div p {
+    color: var(--blue-80)!important;
+    font-weight: var(--font-weight-bold)!important;
+    font-size: var(--font-size-scale-down-01)!important;
+    text-transform: uppercase!important;
+    letter-spacing: 0.05em!important;
+}
+
+/* Rastreamento Estético dos Guias Estruturais Neutros Operacionais das Instâncias Contidas no Invólucro de Menu Horizontal Ancestral */
+html body[class] #ppc-sidebar nav.tab-btn {
+    color: var(--gray-80)!important;
+    background-color: var(--pure-0)!important;
+    font-weight: var(--font-weight-medium)!important;
+    font-size: var(--font-size-scale-base)!important;
+    border-left: 4px solid transparent!important;
+    padding: var(--spacing-scale-2x) var(--spacing-scale-3x)!important;
+    transition: background-color 0.2s ease, border-color 0.2s ease!important;
+}
+
+/* Estado de Foco Óptico Dinâmico com Transição Transitória Azul Leve da Camada Superficial Isoladora e Indicadora */
+html body[class] #ppc-sidebar nav.tab-btn:hover {
+    background-color: var(--blue-10)!important;
+}
+
+/* Ação de Conversão Plena de Interatividade do Estado JavaScript Focado Via Seletores ARIA Isolados e Inerentes do Sistema Preexistente */
+html body[class] #ppc-sidebar nav.tab-btn[aria-selected="true"] {
+    background-color: var(--gray-5)!important;
+    border-left: 4px solid var(--interactive)!important;
+    color: var(--interactive)!important;
+    font-weight: var(--font-weight-semi-bold)!important;
+}
+
+/* Interação Vetorial Imperativa de Imposição sobre Ocultações Opacas Falsas no Escopo do Ícone Atrelado em Todos os Itens */
+html body[class] #ppc-sidebar nav.tab-btn svg {
+    opacity: 1!important;
+    color: var(--blue-60)!important;
+    margin-right: var(--spacing-scale-base)!important; /* Espaçamento Rigoroso Geométrico entre Ícone e Letra Adjacente Direta */
+    width: var(--spacing-scale-3x)!important;
+    height: var(--spacing-scale-3x)!important;
+}
+
+/* Expansão Semântica Isolada sobre Glifo Identificador Vetorial Unicamente Quando o Documento Atual Referenciado Se Encontra Exposto no Escopo Operante */
+html body[class] #ppc-sidebar nav.tab-btn[aria-selected="true"] svg {
+    color: var(--interactive)!important;
+}
+
+/* -----------------------------------------------------------------------------------------
+   COMPORTAMENTAL COMPLEXO BASEADO NAS ÁREAS SUBMERSAS, COLETA DE DADOS, E CARTÕES INFORMATIVOS (_components.css)
+   Reestruturação Funcional Modular dos Invólucros de Controle Central (Panel Control Form)
+   ----------------------------------------------------------------------------------------- */
+/* Respiro Universal Submetido a Múltiplos Paramétricos Puros na Base Modular Fluida Independente Oculta Central */
+html body[class] #ppc-content {
+    padding: var(--spacing-scale-4x) var(--spacing-scale-3x)!important;
+    background-color: transparent!important;
+}
+
+/* Padronização Impositiva sobre os Cabeçalhos Dinâmicos Contidos Baseados Nas Sessões Distribuídas (Situação, Estrutura, Instituição) */
+html body[class] #ppc-content h2,
+html body[class] #ppc-content h3 {
+    color: var(--blue-80)!important;
+    font-weight: var(--font-weight-bold)!important;
+    margin-bottom: var(--spacing-scale-2x)!important;
+    line-height: 2.1em!important;
+}
+
+/* Elevação Dinâmica Física e Sobressaltos Delimitados (Cards, Caixas Contêineres, Modais Flutuantes Base e Agrupamentos Analíticos Estruturais de Matrizes Formulares Ancestrais) */
+html body[class] #ppc-content.card,
+html body[class] #ppc-content fieldset {
+    background-color: var(--pure-0)!important;
+    border: 1px solid var(--gray-20)!important;
+    border-radius: 8px!important;
+    box-shadow: var(--shadow-primary-elevation)!important;
+    padding: var(--spacing-scale-4x)!important;
+    margin-bottom: var(--spacing-scale-4x)!important;
+}
+
+/* Formatações Funcionais Meticulosas de Densidade Central Governamental e Interações nas Áreas Sensíveis Textuais do Projeto (Componentes Previsíveis Base de Interação de Laudas e Seletores Embutidos Invisíveis Ocultos pelas Abas Subjacentes) */
+html body[class] #ppc-content input[type="text"],
+html body[class] #ppc-content input[type="email"],
+html body[class] #ppc-content input[type="number"],
+html body[class] #ppc-content select {
+    width: 100%!important;
+    background-color: var(--pure-0)!important;
+    border: 1px solid var(--gray-60)!important;
+    color: var(--gray-80)!important;
+    font-size: var(--font-size-scale-base)!important;
+    padding: 0 var(--spacing-scale-2x)!important;
+    height: var(--spacing-scale-5x)!important; /* Limite Rigoroso Trancado na Matriz Referencial Extensa Horizontal Associativa Média */
+    border-radius: 4px!important;
+    margin-top: var(--spacing-scale-half)!important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease!important;
+}
+
+/* Eixos de Ajuste de Calibragem para Matrizes Livres e Textos Complexos Verticais Expansivos Livres Formulares */
+html body[class] #ppc-content textarea {
+    width: 100%!important;
+    background-color: var(--pure-0)!important;
+    border: 1px solid var(--gray-60)!important;
+    color: var(--gray-80)!important;
+    font-size: var(--font-size-scale-base)!important;
+    border-radius: 4px!important;
+    margin-top: var(--spacing-scale-half)!important;
+    height: auto!important;
+    min-height: calc(var(--spacing-scale-5x) * 3)!important;
+    padding: var(--spacing-scale-2x)!important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease!important;
+}
+
+/* Delimitadores e Rótulos Indicativos Descritivos Nominais (Label Ancestral Colorido e Estável) */
+html body[class] #ppc-content label {
+    font-size: var(--font-size-scale-down-01)!important;
+    font-weight: var(--font-weight-semi-bold)!important;
+    color: var(--gray-80)!important;
+    display: block!important;
+    margin-bottom: var(--spacing-scale-half)!important;
+}
+
+/* Submissões Validadas e Matrizes Interativas Sobre O Ocular Dinâmico e Controle Manual Focado de Cursores Internos nas Matrizes Formulares Livres Acadêmicas Baseadas */
+html body[class] #ppc-content input:focus,
+html body[class] #ppc-content select:focus,
+html body[class] #ppc-content textarea:focus {
+    border-color: var(--interactive)!important;
+    outline: none!important;
+    box-shadow: 0 0 0 4px var(--blue-20)!important;
+}
+
+/* -----------------------------------------------------------------------------------------
+   ENGENHARIA ESTRUTURAL RETILÍNEA ANALÍTICA E INTERPOLAÇÃO ESTÉTICA MATRICIAL EM GRADES (Tabelas Governamentais Mapeadas de Classificação de Situação Educacional Analítica Complexas Ocultas)
+   ----------------------------------------------------------------------------------------- */
+/* Purificação Atrelada às Borda Espessas Residuais Originalmente Contidas nos Delineamentos das Matrizes do Sistema */
+html body[class] #ppc-content table {
+    width: 100%!important;
+    border-collapse: collapse!important;
+    margin-top: var(--spacing-scale-3x)!important;
+    border: 1px solid var(--gray-20)!important;
+}
+
+/* Cabeçário Central de Orquestração Base Colorido e Isolado do Fundo Ancestral Inerte Analítico Contíguo Neutro Mapeado e Distanciado na Dimensão Pura */
+html body[class] #ppc-content th {
+    background-color: var(--gray-5)!important;
+    color: var(--blue-80)!important;
+    font-weight: var(--font-weight-semi-bold)!important;
+    font-size: var(--font-size-scale-base)!important;
+    text-align: left!important;
+    padding: var(--spacing-scale-2x)!important;
+    border-bottom: 2px solid var(--blue-60)!important;
+}
+
+/* Camada Inferior Contínua Padrão Tracada Finamente para Dados Descritivos Intermediários sem Barulho Residual Poluidor Visual Analítico */
+html body[class] #ppc-content td {
+    padding: var(--spacing-scale-2x)!important;
+    border-bottom: 1px solid var(--gray-20)!important;
+    color: var(--gray-80)!important;
+    font-size: var(--font-size-scale-base)!important;
+}
+
+/* Dinâmica Alternante Listada (Zebrado Discreto Horizontal Trancado Inegociável para Agrupamentos Robustos Longos e Exaustivos Documentados do Padrão) */
+html body[class] #ppc-content tr:nth-child(even) td {
+    background-color: var(--pure-0)!important;
+}
+html body[class] #ppc-content tr:nth-child(odd) td {
+    background-color: var(--gray-5)!important;
+}
+
+/* -----------------------------------------------------------------------------------------
+   INTERAÇÃO INEGOCIÁVEL UNIVERSAL EM BOTÕES E CONFORMIDADE ESTÉTICA (Magic Buttons Puros Submetidos Baseados no Invólucro Lógico Federativo Restrito de Comando Base Semântico)
+   ----------------------------------------------------------------------------------------- */
+/* Destruição Base Opcional via Reset All Unset e Acoplamento Associativo Modular Extenso Restrito e Dinâmico do Eixo Interativo Base Ancestral de Todo Roteiro Estrutural Botão Secundário e Primordial do Formulário */
+html body[class] #ppc-content button[type="submit"],
+html body[class] #ppc-content button[type="button"].btn-primary,
+html body[class].academic-btn {
+    all: unset!important;
+    display: inline-flex!important;
+    align-items: center!important;
+    justify-content: center!important;
+    box-sizing: border-box!important;
+    cursor: pointer!important;
+    font-family: var(--font-family-base)!important;
+    font-weight: var(--font-weight-semi-bold)!important;
+    background-color: var(--blue-50)!important;
+    color: var(--pure-0)!important;
+    padding: 0 var(--spacing-scale-3x)!important;
+    height: var(--spacing-scale-5x)!important;
+    border-radius: 100px!important;
+    border: 1px solid transparent!important;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease!important;
+    font-size: var(--font-size-scale-base)!important;
+}
+
+/* Transição de Destaque Semântico Subjacente Transitório Ocular Interativo Pleno do Arquétipo Magic Button Estrutural Atrelado Base Original Associado no Efeito Dinâmico Sobreposto Hover */
+html body[class] #ppc-content button[type="submit"]:hover,
+html body[class] #ppc-content button[type="button"].btn-primary:hover,
+html body[class].academic-btn:hover {
+    background-color: var(--blue-60)!important;
+    box-shadow: 0 4px 8px rgba(var(--surface-shadow-color), 0.15)!important;
+}
+
+/* -----------------------------------------------------------------------------------------
+   PILAR IRRESTRITO DA ACESSIBILIDADE IMPEDITIVA DE RETALHOS - PREVENÇÃO CEGA VISUAL PROTEGIDA PARA COMPONENTES CLICÁVEIS (WCAG LEVEL AA COMPLIANCE)
+   Supressão Definitiva de Outline Zero Originários Passados Embutidos Base e Interatividade Visual Isolada Mapeada Tátil Protegida
+   ----------------------------------------------------------------------------------------- */
+/* Reconfiguração Absoluta Protegida Impositiva Tridimensional Delineando Camadas Estruturais Nativas Ocultas Recuperadas Via Pseudoclasse Restritiva Dinâmica e Analítica Universal Isoladora Atrelada a Focus Visible Baseado na Cor Neutra Ocular Segura Federal Isolada Oclusiva */
+html body[class] *:focus-visible {
+    outline: 2px solid var(--interactive)!important;
+    outline-offset: 4px!important;
+    border-radius: 2px!important;
+    box-shadow: 0 0 0 4px var(--blue-20)!important;
+}
+
+/* Formatação Dinâmica de Barreira Restritiva Estática Funcional Focada Contra Submissões Impossíveis Interativas Impedidas de Gatilhos Semânticos Cegos do Sistema Original e Desabilitados */
+html body[class] :disabled {
+    background-color: var(--gray-20)!important;
+    color: var(--pure-0)!important;
+    border-color: var(--gray-20)!important;
+    cursor: not-allowed!important;
+    box-shadow: none!important;
+}
+/* =========================================================================================
+   CONCLUSÃO DA INJEÇÃO E DA ARQUITETURA DO MOLDE DECLARATIVO CONSOLIDADO (CSS OVERRIDE COMPLETED)
+   ========================================================================================= */
