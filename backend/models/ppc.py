@@ -72,6 +72,65 @@ class PPCCreate(BaseModel):
     status_curso: Optional[str] = None
 
 
+class PPCUpdate(BaseModel):
+    """Dados para atualizar um PPC existente."""
+    
+    # Dados institucionais
+    campus_name: Optional[str] = None
+    cnpj: Optional[str] = None
+    cep: Optional[str] = None
+    cidade: Optional[str] = None
+    bairro: Optional[str] = None
+    rua: Optional[str] = None
+    numero: Optional[str] = None
+    telefone_fax: Optional[str] = None
+    email_contato: Optional[str] = None
+    ato_legal: Optional[str] = None
+    sitio_web: Optional[str] = None
+
+    # Identificação acadêmica
+    nome_curso: Optional[str] = None
+    area_conhecimento: Optional[str] = None
+    nivel: Optional[str] = None
+    modalidade_curso: Optional[str] = None
+    titulacao: Optional[str] = None
+
+    # Carga horária
+    ch_total_relogio: Optional[int] = None
+    ch_total_aula: Optional[int] = None
+    duracao_aula_minutos: Optional[int] = None
+    atividades_complementares: Optional[int] = None
+    ch_extensao: Optional[int] = None
+
+    # Integralização e calendário
+    integralizacao_min_semestres: Optional[int] = None
+    integralizacao_max_semestres: Optional[int] = None
+    semanas_letivas: Optional[int] = None
+    periodicidade_letiva: Optional[str] = None
+    inicio_curso: Optional[str] = None
+    matriz_curricular_alterada: Optional[str] = None
+
+    # Oferta e acesso
+    formas_acesso: Optional[str] = None
+    pre_requisito_ingresso: Optional[str] = None
+    vagas_anuais: Optional[int] = None
+    vagas_turno: Optional[int] = None
+    turnos: Optional[str] = None
+    regime_matricula: Optional[str] = None
+
+    # Cursos correlatos
+    cursos_tecnicos_afins: Optional[str] = None
+    outros_cursos_campus: Optional[str] = None
+
+    # Avaliação e situação
+    conceito_cc: Optional[str] = None
+    conceito_cpc: Optional[str] = None
+    conceito_enade: Optional[str] = None
+    igc: Optional[str] = None
+    tipo_reformulacao: Optional[str] = None
+    status_curso: Optional[str] = None
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Componente Curricular (tabela: componente_curricular + bibliografia)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -107,6 +166,26 @@ class ComponenteCreate(BaseModel):
     bibliografias: list[BibliografiaCreate] = []
 
 
+class ComponenteUpdate(BaseModel):
+    """Dados para atualizar um componente existente."""
+
+    codigo: Optional[str] = None
+    nome: Optional[str] = None
+    periodo: Optional[int] = None
+    tipo: Optional[str] = None
+    nucleo_curricular: Optional[str] = None
+    sub_nucleo: Optional[str] = None
+    creditos: Optional[int] = None
+    ch_total_aula: Optional[int] = None
+    ch_total_relogio: Optional[int] = None
+    ch_teorica: Optional[int] = None
+    ch_pratica: Optional[int] = None
+    ch_extensao: Optional[int] = None
+    ementa: Optional[str] = None
+    pre_requisito_codigo: Optional[str] = None
+    co_requisito_codigo: Optional[str] = None
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Membro Institucional (tabela: membro_institucional)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -140,6 +219,23 @@ class CoordenacaoCreate(BaseModel):
     email: Optional[str] = None
 
 
+class CoordenacaoUpdate(BaseModel):
+    """Dados para atualizar a coordenação de um curso."""
+
+    nome_professor: Optional[str] = None
+    regime_trabalho: Optional[str] = None
+    ch_semanal_coordenacao: Optional[int] = None
+    tempo_exercicio_ies: Optional[str] = None
+    tempo_coordenacao_curso: Optional[str] = None
+    qualificacao: Optional[str] = None
+    titulacao: Optional[str] = None
+    grupos_pesquisa: Optional[str] = None
+    linhas_pesquisa: Optional[str] = None
+    experiencia_profissional: Optional[int] = None
+    experiencia_gestao: Optional[str] = None
+    email: Optional[str] = None
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Docente (tabela: docente)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -158,6 +254,18 @@ class DocenteCreate(BaseModel):
     componentes_ministrados: list[str] = []
 
 
+class DocenteUpdate(BaseModel):
+    """Dados para atualizar um docente existente."""
+
+    nome: Optional[str] = None
+    formacao_academica: Optional[str] = None
+    regime_trabalho: Optional[str] = None
+    titulacao: Optional[str] = None
+    experiencia_docencia_anos: Optional[int] = None
+    link_lattes: Optional[str] = None
+    componentes_ministrados: Optional[list[str]] = None
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Infraestrutura (tabelas: ambiente + item_infraestrutura)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -171,6 +279,15 @@ class ItemInfraCreate(BaseModel):
     especificacoes: Optional[str] = None
 
 
+class ItemInfraUpdate(BaseModel):
+    """Dados para atualizar um item de infraestrutura."""
+
+    tipo: Optional[str] = None
+    nome_item: Optional[str] = None
+    quantidade: Optional[int] = None
+    especificacoes: Optional[str] = None
+
+
 class AmbienteCreate(BaseModel):
     """Um espaço físico (sala, laboratório, etc.) com seus itens."""
 
@@ -179,6 +296,15 @@ class AmbienteCreate(BaseModel):
     quantidade: Optional[int] = 1
     area_m2: Optional[float] = None
     itens: list[ItemInfraCreate] = []
+
+
+class AmbienteUpdate(BaseModel):
+    """Dados para atualizar um ambiente existente."""
+
+    categoria: Optional[str] = None
+    nome_ambiente: Optional[str] = None
+    quantidade: Optional[int] = None
+    area_m2: Optional[float] = None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
