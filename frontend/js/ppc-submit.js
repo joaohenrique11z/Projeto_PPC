@@ -1,216 +1,135 @@
 /**
- * ppc-submit.js — Coleta os dados do formulário e envia para a API (Supabase)
+ * ppc-submit.js — Coleta os dados do formulário e envia para a API
  * Sistema Gerador de PPC — IFPE Campus Belo Jardim
+ *
+ * Depende de:
+ *   - window.__componentesState  (exposto pelo componentes.js após cada add/edit/remove)
+ *   - window.__crudState         (exposto pelo crud.js após cada add/edit/remove)
  */
 
 (function () {
     'use strict';
 
     /**
-     * Extrai todos os dados do formulário e das tabelas dinâmicas,
-     * montando o objeto PPCPayload exatamente como a API espera.
+     * Lê um campo de texto do DOM pelo id.
+     * @param {string} id
+     * @returns {string|null}
      */
-    function buildPPCPayload() {
-        // --- 1. Dados Institucionais e do Curso ---
-        const ppc = {
-            // Institucional
-            campus_name: document.getElementById('campus_name')?.value || null,
-            cnpj: document.getElementById('cnpj')?.value || null,
-            cep: document.getElementById('cep')?.value || null,
-            cidade: document.getElementById('cidade')?.value || null,
-            bairro: document.getElementById('bairro')?.value || null,
-            rua: document.getElementById('rua')?.value || null,
-            numero: document.getElementById('numero')?.value || null,
-            telefone_fax: document.getElementById('telefone_fax')?.value || null,
-            email_contato: document.getElementById('email_contato')?.value || null,
-            ato_legal: document.getElementById('ato_legal')?.value || null,
-            sitio_web: document.getElementById('sitio_web')?.value || null,
+    function getText(id) {
+        return document.getElementById(id)?.value?.trim() || null;
+    }
 
-            // Curso
-            nome_curso: document.getElementById('nome_curso')?.value || null,
-            area_conhecimento: document.getElementById('area_conhecimento')?.value || null,
-            nivel: document.getElementById('nivel')?.value || null,
-            modalidade_curso: document.getElementById('modalidade_curso')?.value || null,
-            titulacao: document.getElementById('titulacao')?.value || null,
+    /**
+     * Lê um campo numérico do DOM pelo id.
+     * @param {string} id
+     * @returns {number|null}
+     */
+    function getInt(id) {
+        const val = parseInt(document.getElementById(id)?.value, 10);
+        return isNaN(val) ? null : val;
+    }
 
-            // Carga horária
-            ch_total_relogio: parseInt(document.getElementById('ch_total_relogio')?.value, 10) || null,
-            ch_total_aula: parseInt(document.getElementById('ch_total_aula')?.value, 10) || null,
-            duracao_aula_minutos: parseInt(document.getElementById('duracao_aula_minutos')?.value, 10) || null,
-            atividades_complementares: parseInt(document.getElementById('atividades_complementares')?.value, 10) || null,
-            ch_extensao: parseInt(document.getElementById('ch_extensao')?.value, 10) || null,
-
-            // Integralização e calendário
-            integralizacao_min_semestres: parseInt(document.getElementById('integralizacao_min_semestres')?.value, 10) || null,
-            integralizacao_max_semestres: parseInt(document.getElementById('integralizacao_max_semestres')?.value, 10) || null,
-            semanas_letivas: parseInt(document.getElementById('semanas_letivas')?.value, 10) || null,
-            periodicidade_letiva: document.getElementById('periodicidade_letiva')?.value || null,
-            inicio_curso: document.getElementById('inicio_curso')?.value || null,
-            matriz_curricular_alterada: document.getElementById('matriz_curricular_alterada')?.value || null,
-
-            // Oferta e acesso
-            formas_acesso: document.getElementById('formas_acesso')?.value || null,
-            pre_requisito_ingresso: document.getElementById('pre_requisito_ingresso')?.value || null,
-            vagas_anuais: parseInt(document.getElementById('vagas_anuais')?.value, 10) || null,
-            vagas_turno: parseInt(document.getElementById('vagas_turno')?.value, 10) || null,
-            turnos: document.getElementById('turnos')?.value || null,
-            regime_matricula: document.getElementById('regime_matricula')?.value || null,
-
-            // Cursos correlatos
-            cursos_tecnicos_afins: document.getElementById('cursos_tecnicos_afins')?.value || null,
-            outros_cursos_campus: document.getElementById('outros_cursos_campus')?.value || null,
-
-            // Avaliação e situação
-            conceito_cc: document.getElementById('conceito_cc')?.value || null,
-            conceito_cpc: document.getElementById('conceito_cpc')?.value || null,
-            conceito_enade: document.getElementById('conceito_enade')?.value || null,
-            igc: document.getElementById('igc')?.value || null,
-            tipo_reformulacao: document.getElementById('tipo_reformulacao')?.value || null,
-            status_curso: document.getElementById('status_curso')?.value || null,
-        };
-
-        // --- 2. Coordenação ---
-        const coordenacao = {
-            nome_professor: document.getElementById('coord_nome')?.value || null,
-            regime_trabalho: document.getElementById('coord_regime_trabalho')?.value || null,
-            ch_semanal_coordenacao: parseInt(document.getElementById('coord_ch_semanal')?.value, 10) || null,
-            tempo_exercicio_ies: document.getElementById('coord_tempo_ies')?.value || null,
-            tempo_coordenacao_curso: document.getElementById('coord_tempo_curso')?.value || null,
-            qualificacao: document.getElementById('coord_qualificacao')?.value || null,
-            titulacao: document.getElementById('coord_titulacao')?.value || null,
-            grupos_pesquisa: document.getElementById('coord_grupos_pesquisa')?.value || null,
-            linhas_pesquisa: document.getElementById('coord_linhas_pesquisa')?.value || null,
-            experiencia_profissional: parseInt(document.getElementById('coord_exp_profissional')?.value, 10) || null,
-            experiencia_gestao: document.getElementById('coord_exp_gestao')?.value || null,
-            email: document.getElementById('coord_email')?.value || null,
-        };
-
-        // --- 3. Membros Institucionais ---
-        const membros = [];
-        document.querySelectorAll('#membros-body tr').forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 3) {
-                membros.push({
-                    tipo: cells[0].textContent.trim(),
-                    cargo: cells[1].textContent.trim(),
-                    nome: cells[2].textContent.trim()
-                });
-            }
-        });
-
-        // --- 4. Corpo Docente ---
-        const docentes = [];
-        document.querySelectorAll('#docentes-body tr').forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 6) {
-                docentes.push({
-                    nome: cells[0].textContent.trim(),
-                    formacao_academica: cells[1].textContent.trim(),
-                    titulacao: cells[2].textContent.trim(),
-                    regime_trabalho: cells[3].textContent.trim(),
-                    experiencia_docencia_anos: parseInt(cells[4].textContent.trim(), 10) || 0,
-                    link_lattes: cells[5].querySelector('a') ? cells[5].querySelector('a').href : null
-                });
-            }
-        });
-
-        // --- 5. Ambientes e Infraestrutura ---
-        const ambientes = [];
-        document.querySelectorAll('#ambientes-body tr').forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if (cells.length >= 5) {
-                // Tenta extrair a lista de itens armazenada em um atributo de dados, se houver
-                // ou apenas pega os textos se for uma tabela simples. No crud.js os itens ficam armazenados.
-                // Como não temos acesso fácil ao state do crud.js, vamos ler do dataset que o crud.js deveria guardar.
-                // Atualização: o crud.js atual (presumo) não guarda os itens no DOM de forma fácil,
-                // vamos precisar iterar as linhas ou pegar de uma variável global.
-                // Para não quebrar, vamos extrair os dados visíveis do ambiente.
-                // O ideal seria que o `crud.js` expusesse um getter para `ambientes`, mas como não foi modificado,
-                // vamos preencher apenas o AmbienteCreate com itens vazios, ou adaptar se o crud.js já expõe.
-                
-                // Hack seguro: Tenta ler __ppcAmbientes se existir, caso contrário extrai do HTML.
-                // Assumindo que os ambientes têm um dataset ou são guardados.
-                // Como não temos certeza da implementação do crud.js, vamos extrair os dados básicos do ambiente.
-                ambientes.push({
-                    categoria: cells[0].textContent.trim(),
-                    nome_ambiente: cells[1].textContent.trim(),
-                    quantidade: parseInt(cells[2].textContent.trim(), 10) || 1,
-                    area_m2: parseFloat(cells[3].textContent.trim()) || null,
-                    itens: [] // Itens de infra não estão na tabela principal de ambientes
-                });
-            }
-        });
-        
-        // Vamos tentar ler os itens de infraestrutura da tabela
-        const todosItens = [];
-        document.querySelectorAll('#itens-infra-body tr').forEach(row => {
-            const cells = row.querySelectorAll('td');
-            if(cells.length >= 4) {
-               todosItens.push({
-                   ambiente_nome: cells[0].textContent.trim(), // Supondo que tem uma coluna ambiente
-                   tipo: cells[1].textContent.trim(),
-                   nome_item: cells[2].textContent.trim(),
-                   quantidade: parseInt(cells[3].textContent.trim(), 10) || 1,
-                   especificacoes: cells[4] ? cells[4].textContent.trim() : null
-               });
-            }
-        });
-        // Associa os itens aos ambientes
-        ambientes.forEach(amb => {
-            amb.itens = todosItens.filter(i => i.ambiente_nome === amb.nome_ambiente).map(i => {
-                return {
-                    tipo: i.tipo,
-                    nome_item: i.nome_item,
-                    quantidade: i.quantidade,
-                    especificacoes: i.especificacoes
-                }
-            });
-        });
-
-        // --- 6. Componentes Curriculares (Grade) ---
-        let componentes = [];
-        // Se window.__ppcComponentes foi exposto, usamos ele, senão pegamos da tabela
-        if (window.__ppcComponentes && Array.isArray(window.__ppcComponentes)) {
-            componentes = window.__ppcComponentes.map(comp => ({
-                codigo: comp.codigo || null,
-                nome: comp.nome,
-                periodo: parseInt(comp.periodo, 10),
-                tipo: comp.tipo,
-                nucleo_curricular: comp.nucleo_curricular || null,
-                sub_nucleo: comp.sub_nucleo || null,
-                creditos: parseInt(comp.creditos, 10) || 0,
-                ch_total_aula: parseInt(comp.ch_total_aula, 10) || 0,
-                ch_total_relogio: parseInt(comp.ch_total_relogio, 10) || 0,
-                ch_teorica: parseInt(comp.ch_teorica, 10) || 0,
-                ch_pratica: parseInt(comp.ch_pratica, 10) || 0,
-                ch_extensao: parseInt(comp.ch_extensao, 10) || 0,
-                ementa: comp.ementa || null,
-                bibliografias: (comp.bibliografia || []).map(b => ({
-                    tipo: b.tipo,
-                    referencia_texto: b.referencia_texto
-                }))
-            }));
-        }
-
-        // --- Payload Completo ---
+    /**
+     * Monta o objeto ppc com todos os dados do curso preenchidos nos forms.
+     * @returns {Object}
+     */
+    function buildPPC() {
         return {
-            ppc,
-            coordenacao,
-            membros,
-            docentes,
-            ambientes,
-            componentes
+            campus_name:                  getText('campus_name'),
+            cnpj:                         getText('cnpj'),
+            cep:                          getText('cep'),
+            cidade:                       getText('cidade'),
+            bairro:                       getText('bairro'),
+            rua:                          getText('rua'),
+            numero:                       getText('numero'),
+            telefone_fax:                 getText('telefone_fax'),
+            email_contato:                getText('email_contato'),
+            ato_legal:                    getText('ato_legal'),
+            sitio_web:                    getText('sitio_web'),
+            nome_curso:                   getText('nome_curso'),
+            // O HTML usa 'area_conhecimento' e 'eixo_tecnologico' para o mesmo campo
+            area_conhecimento:            getText('area_conhecimento') || getText('eixo_tecnologico'),
+            nivel:                        getText('nivel'),
+            modalidade_curso:             getText('modalidade_curso'),
+            // 'tipo_curso' no HTML equivale a 'titulacao' no modelo
+            titulacao:                    getText('titulacao') || getText('tipo_curso'),
+            ch_total_relogio:             getInt('ch_total_relogio'),
+            ch_total_aula:                getInt('ch_total_aula'),
+            duracao_aula_minutos:         getInt('duracao_aula_minutos'),
+            atividades_complementares:    getInt('atividades_complementares'),
+            ch_extensao:                  getInt('ch_extensao'),
+            integralizacao_min_semestres: getInt('integralizacao_min_semestres'),
+            integralizacao_max_semestres: getInt('integralizacao_max_semestres'),
+            semanas_letivas:              getInt('semanas_letivas'),
+            periodicidade_letiva:         getText('periodicidade_letiva'),
+            inicio_curso:                 getText('inicio_curso'),
+            matriz_curricular_alterada:   getText('matriz_curricular_alterada'),
+            formas_acesso:                getText('formas_acesso'),
+            pre_requisito_ingresso:       getText('pre_requisito_ingresso'),
+            vagas_anuais:                 getInt('vagas_anuais'),
+            vagas_turno:                  getInt('vagas_turno'),
+            turnos:                       getText('turnos'),
+            regime_matricula:             getText('regime_matricula'),
+            cursos_tecnicos_afins:        getText('cursos_tecnicos_afins'),
+            outros_cursos_campus:         getText('outros_cursos_campus'),
+            conceito_cc:                  getText('conceito_cc'),
+            conceito_cpc:                 getText('conceito_cpc'),
+            conceito_enade:               getText('conceito_enade'),
+            igc:                          getText('igc'),
+            tipo_reformulacao:            getText('tipo_reformulacao'),
+            status_curso:                 getText('status_curso'),
         };
     }
 
     /**
-     * Listener para enviar o PPC para a API.
+     * Coleta os dados do coordenador do curso a partir dos campos do formulário.
+     * Retorna null se o nome do coordenador não foi preenchido.
+     * @returns {Object|null}
      */
-    document.addEventListener('ppc:submit', async function () {
+    function buildCoordenacao() {
+        const nome = getText('coord_nome');
+        if (!nome) return null;
+
+        return {
+            nome_professor:          nome,
+            regime_trabalho:         getText('coord_regime_trabalho'),
+            ch_semanal_coordenacao:  getInt('coord_ch_semanal'),
+            tempo_exercicio_ies:     getText('coord_tempo_ies'),
+            tempo_coordenacao_curso: getText('coord_tempo_curso'),
+            qualificacao:            getText('coord_qualificacao'),
+            titulacao:               getText('coord_titulacao'),
+            grupos_pesquisa:         getText('coord_grupos_pesquisa'),
+            linhas_pesquisa:         getText('coord_linhas_pesquisa'),
+            experiencia_profissional: getInt('coord_exp_profissional'),
+            experiencia_gestao:      getText('coord_exp_gestao'),
+            email:                   getText('coord_email'),
+        };
+    }
+
+    /**
+     * Monta o payload completo lendo os estados globais expostos pelos outros módulos.
+     * @returns {Object}
+     */
+    function buildPayload() {
+        const crudState = window.__crudState || { membros: [], docentes: [], ambientes: [] };
+        const componentes = window.__componentesState || [];
+
+        return {
+            ppc:         buildPPC(),
+            coordenacao: buildCoordenacao(),
+            membros:     crudState.membros,
+            docentes:    crudState.docentes,
+            componentes: componentes,
+            ambientes:   crudState.ambientes,
+        };
+    }
+
+    /**
+     * Envia o payload para a API e trata sucesso/erro.
+     */
+    async function submeterPPC() {
         const btnConfirmar = document.getElementById('btn-confirmar-envio');
-        const modalConfirmar = document.getElementById('modal-confirmar-envio');
-        
-        // Estado de loading
+
         if (btnConfirmar) {
             btnConfirmar.disabled = true;
             btnConfirmar.innerHTML = `
@@ -222,30 +141,30 @@
             `;
         }
 
-        const payload = buildPPCPayload();
+        const payload = buildPayload();
+
+        // Log para depuração — remove antes de ir para produção
+        console.log('[ppc-submit] Payload a enviar:', JSON.stringify(payload, null, 2));
 
         try {
             const response = await fetch('http://localhost:8000/api/ppc', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.detail || 'Falha ao salvar PPC no servidor.');
+                throw new Error(errData.detail || `Erro HTTP ${response.status}`);
             }
 
-            // Sucesso! Redirecionar
+            // Sucesso — redireciona para a listagem
             window.location.href = 'index.html';
 
         } catch (error) {
-            console.error('[ppc-submit] Erro:', error);
+            console.error('[ppc-submit] Erro ao enviar:', error);
             alert(`Ocorreu um erro ao salvar o PPC:\n${error.message}`);
-            
-            // Restaura o botão
+
             if (btnConfirmar) {
                 btnConfirmar.disabled = false;
                 btnConfirmar.innerHTML = `
@@ -255,6 +174,31 @@
                     Confirmar Envio
                 `;
             }
+        }
+    }
+
+    // Botão de confirmação final no modal
+    document.addEventListener('DOMContentLoaded', function () {
+        const btnConfirmar = document.getElementById('btn-confirmar-envio');
+        if (btnConfirmar) {
+            btnConfirmar.addEventListener('click', submeterPPC);
+        }
+
+        // Botão "Enviar PPC" na sidebar abre o modal de confirmação
+        const btnEnviar = document.getElementById('btn-enviar-ppc');
+        const modalConfirmar = document.getElementById('modal-confirmar-envio');
+        const btnCancelar = document.getElementById('btn-cancelar-envio');
+
+        if (btnEnviar && modalConfirmar) {
+            btnEnviar.addEventListener('click', () => {
+                modalConfirmar.classList.remove('hidden');
+            });
+        }
+
+        if (btnCancelar && modalConfirmar) {
+            btnCancelar.addEventListener('click', () => {
+                modalConfirmar.classList.add('hidden');
+            });
         }
     });
 
