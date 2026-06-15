@@ -49,6 +49,45 @@
         return 'border-b border-gray-200 dark:border-gray-700';
     }
 
+    /**
+     * Sincroniza todos os arrays locais com a variável global
+     * window.__crudState, usada pelo ppc-submit.js no momento do envio.
+     * Os campos dos docentes são remapeados para os nomes esperados pelo backend.
+     */
+    function sincronizarCrudState() {
+        window.__crudState = {
+            membros: membros.map(m => ({
+                tipo:  m.tipo,
+                cargo: m.cargo,
+                nome:  m.nome,
+            })),
+            docentes: docentes.map(d => ({
+                nome:                      d.nome,
+                formacao_academica:        d.formacao || null,
+                regime_trabalho:           d.regime || null,
+                titulacao:                 d.titulacao || null,
+                experiencia_docencia_anos: parseInt(d.exp_docencia, 10) || 0,
+                link_lattes:               d.lattes || null,
+                componentes_ministrados:   d.componentes_ministrados || [],
+            })),
+            // Ambientes com itens aninhados pelo índice
+            ambientes: ambientes.map((a, idx) => ({
+                categoria:    a.categoria,
+                nome_ambiente: a.nome,
+                quantidade:   a.quantidade || 1,
+                area_m2:      parseFloat(a.area_m2) || null,
+                itens: itensInfra
+                    .filter(item => item.ambiente_idx === idx)
+                    .map(item => ({
+                        tipo:           item.tipo,
+                        nome_item:      item.nome,
+                        quantidade:     item.quantidade || 1,
+                        especificacoes: item.especificacoes || null,
+                    })),
+            })),
+        };
+    }
+
     /* ================================================================== */
     /* MEMBROS INSTITUCIONAIS                                              */
     /* Tabela: #tabela-membros / #membros-body                            */
@@ -104,6 +143,7 @@
                 } else if (editIndexMembro > idx) {
                     editIndexMembro--;
                 }
+                sincronizarCrudState();
                 renderMembros();
             });
         });
@@ -142,6 +182,7 @@
                 membros[editIndexMembro] = novo;
                 cancelarEdicaoMembro();
             }
+            sincronizarCrudState();
             renderMembros();
             formMembro.reset();
         });
@@ -163,10 +204,59 @@
 
     /**
      * @type {Array<{nome: string, titulacao: string, regime: string,
-     *               exp_docencia: number, lattes: string, formacao: string}>}
+     *               exp_docencia: number, lattes: string, formacao: string,
+     *               componentes_ministrados: string[]}>}
      */
     let docentes = [];
     let editIndexDocente = -1;
+
+    /**
+     * Atualiza os checkboxes de componentes no formulário de docente
+     * lendo window.__componentesState (exposto pelo componentes.js).
+     * Preserva as seleções já feitas, se houver.
+     *
+     * @param {string[]} [selecionados=[]] - Códigos de componentes a pré-marcar (modo edição).
+     */
+    function atualizarCheckboxesComponentes(selecionados = []) {
+        const container = document.getElementById('doc-componentes-lista');
+        const msgVazio  = document.getElementById('doc-componentes-vazio');
+        if (!container) return;
+
+        const componentes = window.__componentesState || [];
+
+        // Remove apenas os checkboxes anteriores, preservando a mensagem vazia
+        container.querySelectorAll('label.comp-checkbox-label').forEach(el => el.remove());
+
+        if (componentes.length === 0) {
+            msgVazio && msgVazio.classList.remove('hidden');
+            return;
+        }
+
+        msgVazio && msgVazio.classList.add('hidden');
+
+        componentes.forEach(comp => {
+            const label = document.createElement('label');
+            label.className = 'comp-checkbox-label flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 py-1 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600/30 rounded px-1';
+
+            const checkbox = document.createElement('input');
+            checkbox.type    = 'checkbox';
+            checkbox.name    = 'doc_componentes';
+            checkbox.value   = comp.codigo;
+            checkbox.checked = selecionados.includes(comp.codigo);
+            checkbox.className = 'rounded border-gray-300 text-blue-600 focus:ring-blue-500';
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(`${comp.codigo} — ${comp.nome}`));
+            container.appendChild(label);
+        });
+    }
+
+    /** Lê os códigos dos componentes marcados no formulário de docente. */
+    function coletarComponentesSelecionados() {
+        return Array.from(
+            document.querySelectorAll('#doc-componentes-lista input[name="doc_componentes"]:checked')
+        ).map(cb => cb.value);
+    }
 
     function cancelarEdicaoDocente() {
         editIndexDocente = -1;
@@ -225,6 +315,7 @@
                 } else if (editIndexDocente > idx) {
                     editIndexDocente--;
                 }
+                sincronizarCrudState();
                 renderDocentes();
             });
         });
@@ -239,6 +330,8 @@
                 document.getElementById('doc_exp_docencia').value = d.exp_docencia;
                 document.getElementById('doc_lattes').value = d.lattes;
                 document.getElementById('doc_formacao').value = d.formacao;
+                // Restaura checkboxes dos componentes ministrados
+                atualizarCheckboxesComponentes(d.componentes_ministrados || []);
                 editIndexDocente = i;
                 const submitBtn = document.getElementById('btn-adicionar-docente');
                 if (submitBtn) {
@@ -256,12 +349,13 @@
         formDocente.addEventListener('submit', e => {
             e.preventDefault();
             const novo = {
-                nome:         document.getElementById('doc_nome').value,
-                titulacao:    document.getElementById('doc_titulacao').value,
-                regime:       document.getElementById('doc_regime').value,
-                exp_docencia: document.getElementById('doc_exp_docencia').value || 0,
-                lattes:       document.getElementById('doc_lattes').value,
-                formacao:     document.getElementById('doc_formacao').value,
+                nome:                    document.getElementById('doc_nome').value,
+                titulacao:               document.getElementById('doc_titulacao').value,
+                regime:                  document.getElementById('doc_regime').value,
+                exp_docencia:            document.getElementById('doc_exp_docencia').value || 0,
+                lattes:                  document.getElementById('doc_lattes').value,
+                formacao:                document.getElementById('doc_formacao').value,
+                componentes_ministrados: coletarComponentesSelecionados(),
             };
             if (editIndexDocente === -1) {
                 docentes.push(novo);
@@ -269,12 +363,18 @@
                 docentes[editIndexDocente] = novo;
                 cancelarEdicaoDocente();
             }
+            sincronizarCrudState();
             renderDocentes();
             formDocente.reset();
+            // Desmarca todos os checkboxes após reset
+            atualizarCheckboxesComponentes([]);
         });
 
         formDocente.addEventListener('reset', () => {
-            setTimeout(cancelarEdicaoDocente, 10);
+            setTimeout(() => {
+                cancelarEdicaoDocente();
+                atualizarCheckboxesComponentes([]);
+            }, 10);
         });
     }
 
@@ -360,6 +460,7 @@
                     if (item.ambiente_idx > idx) item.ambiente_idx--;
                     return item;
                 });
+                sincronizarCrudState();
                 renderItens();
 
                 renderAmbientes();
@@ -402,6 +503,7 @@
                 ambientes[editIndexAmbiente] = novo;
                 cancelarEdicaoAmbiente();
             }
+            sincronizarCrudState();
             renderAmbientes();
             formAmbiente.reset();
             renderItens(); // Atualiza os nomes no select
@@ -478,6 +580,7 @@
                 } else if (editIndexItem > idx) {
                     editIndexItem--;
                 }
+                sincronizarCrudState();
                 renderItens();
             });
         });
@@ -520,6 +623,7 @@
                 itensInfra[editIndexItem] = novo;
                 cancelarEdicaoItem();
             }
+            sincronizarCrudState();
             renderItens();
             formItemInfra.reset();
             // Restaura valor padrão do campo quantidade após reset
@@ -539,5 +643,16 @@
     renderDocentes();
     renderAmbientes();
     renderItens();
+
+    // Popula os checkboxes de componentes imediatamente
+    atualizarCheckboxesComponentes([]);
+
+    // Atualiza a lista de componentes toda vez que a aba de docentes é ativada,
+    // garantindo que componentes adicionados depois também apareçam na lista.
+    document.querySelectorAll('[data-tab="corpo-docente"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            atualizarCheckboxesComponentes([]);
+        });
+    });
 
 })();

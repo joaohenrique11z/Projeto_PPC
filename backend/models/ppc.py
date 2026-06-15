@@ -99,6 +99,11 @@ class ComponenteCreate(BaseModel):
     ch_pratica: Optional[int] = 0
     ch_extensao: Optional[int] = 0
     ementa: Optional[str] = None
+    # Códigos dos componentes que são pré/co-requisito DESTE componente.
+    # Usados para criar os vínculos na tabela componente_dependencia.
+    # Não são colunas da tabela componente_curricular — o service os exclui antes de inserir.
+    pre_requisito_codigo: Optional[str] = None
+    co_requisito_codigo: Optional[str] = None
     bibliografias: list[BibliografiaCreate] = []
 
 
@@ -148,6 +153,9 @@ class DocenteCreate(BaseModel):
     titulacao: Optional[str] = None
     experiencia_docencia_anos: Optional[int] = None
     link_lattes: Optional[str] = None
+    # Códigos dos componentes curriculares que este docente ministra.
+    # Usados para criar os vínculos na tabela docente_componente.
+    componentes_ministrados: list[str] = []
 
 
 # ─────────────────────────────────────────────────────────────────────────────

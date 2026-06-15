@@ -8,6 +8,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let componentes = [];
     let editIndex   = -1;
+
+    /** Sincroniza o estado local com a variável global usada pelo ppc-submit.js. */
+    function sincronizarEstadoGlobal() {
+        window.__componentesState = componentes.map(comp => ({
+            codigo:               comp.codigo,
+            nome:                 comp.nome,
+            tipo:                 comp.tipo,
+            periodo:              parseInt(comp.periodo, 10),
+            nucleo_curricular:    comp.nucleo || null,
+            sub_nucleo:           comp.subNucleo || null,
+            creditos:             comp.totalCreditos || 0,
+            ch_total_aula:        comp.totalHorasAula || 0,
+            ch_total_relogio:     comp.totalHoras || 0,
+            ch_teorica:           comp.hrTeoricas || 0,
+            ch_pratica:           comp.hrPraticas || 0,
+            ch_extensao:          comp.hrExtensao || 0,
+            ementa:               comp.ementa || null,
+            // Dependências: código do componente que é pré/co-requisito deste
+            pre_requisito_codigo: comp.preReq || null,
+            co_requisito_codigo:  comp.coReq  || null,
+            // Converte strings de bibliografia em lista de objetos {tipo, referencia_texto}
+            bibliografias: _parseBibliografias(comp.bibBasica, comp.bibComplementar),
+        }));
+    }
+
+    /**
+     * Converte as strings brutas de bibliografia (uma referência por linha)
+     * em um array de objetos no formato esperado pelo backend.
+     */
+    function _parseBibliografias(bibBasica, bibComplementar) {
+        const resultado = [];
+        if (bibBasica) {
+            bibBasica.split('\n').forEach(linha => {
+                const ref = linha.trim();
+                if (ref) resultado.push({ tipo: 'Basica', referencia_texto: ref });
+            });
+        }
+        if (bibComplementar) {
+            bibComplementar.split('\n').forEach(linha => {
+                const ref = linha.trim();
+                if (ref) resultado.push({ tipo: 'Complementar', referencia_texto: ref });
+            });
+        }
+        return resultado;
+    }
     let componenteToRemoveIndex = -1;
 
     const modalRemover       = document.getElementById('modal-remover-componente');
@@ -63,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnAdicionar.classList.add('bg-blue-700', 'hover:bg-blue-800');
         }
 
+        sincronizarEstadoGlobal();
         limparForm();
         atualizarTabela();
         // Atualiza os selects sem filtro (nenhum componente em edição)
@@ -262,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 editIndex--;
             }
 
+            sincronizarEstadoGlobal();
             atualizarTabela();
             atualizarSelectsRequisitos(null);
         }

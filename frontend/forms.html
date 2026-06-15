@@ -1063,6 +1063,22 @@
                                 placeholder="Ex: Doutorado em Engenharia Elétrica - UNICAMP (2018)..."
                                 class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                         </div>
+
+                        <!-- Componentes que o docente ministra -->
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+                                Componentes Curriculares Ministrados
+                                <span class="text-gray-400 text-xs font-normal ml-1">(selecione um ou mais)</span>
+                            </label>
+                            <div id="doc-componentes-lista"
+                                class="border border-gray-300 dark:border-gray-600 rounded p-3 bg-white dark:bg-gray-700 max-h-48 overflow-y-auto">
+                                <p id="doc-componentes-vazio" class="text-xs text-gray-400 dark:text-gray-500 italic">
+                                    Nenhum componente cadastrado ainda. Vá à aba "Componentes Curriculares" e adicione os componentes primeiro.
+                                </p>
+                                <!-- Checkboxes inseridos dinamicamente pelo crud.js -->
+                            </div>
+                        </div>
+
                         <div class="flex gap-3">
                             <button type="submit" id="btn-adicionar-docente"
                                 class="bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">

@@ -3,8 +3,9 @@ services/ppc_service.py
 Lógica de negócio para persistência do PPC completo no Supabase.
 
 A inserção é sequencial seguindo a ordem de dependência das chaves estrangeiras:
-  ppc → membros, coordenacao, docentes
+  ppc → membros, coordenacao
   ppc → componentes → bibliografias
+  ppc → docentes → docente_componente (exige IDs de componentes já inseridos)
   ppc → ambientes → itens_infraestrutura
 """
 
@@ -29,8 +30,21 @@ def salvar_ppc(payload: PPCPayload) -> dict:
 
     _inserir_membros(ppc_id, payload.membros)
     _inserir_coordenacao(ppc_id, payload.coordenacao)
-    _inserir_docentes(ppc_id, payload.docentes)
-    _inserir_componentes(ppc_id, payload.componentes)
+
+    # Componentes devem ser inseridos antes dos docentes para que seus IDs
+    # estejam disponíveis ao criar os vínculos na docente_componente.
+    componente_id_por_codigo = _inserir_componentes(ppc_id, payload.componentes)
+
+    _inserir_dependencias_componentes(componente_id_por_codigo, payload.componentes)
+
+    docente_id_por_nome = _inserir_docentes(ppc_id, payload.docentes)
+
+    _inserir_vinculos_docente_componente(
+        docente_id_por_nome,
+        componente_id_por_codigo,
+        payload.docentes,
+    )
+
     _inserir_ambientes(ppc_id, payload.ambientes)
 
     return {"ppc_id": ppc_id}
@@ -67,34 +81,37 @@ def _inserir_coordenacao(ppc_id: str, coordenacao) -> None:
     supabase.table("coordenacao").insert(dados).execute()
 
 
-def _inserir_docentes(ppc_id: str, docentes: list) -> None:
-    """Insere todos os docentes vinculados ao PPC."""
-    if not docentes:
-        return
-
-    rows = [
-        {**d.model_dump(exclude_none=True), "ppc_id": ppc_id}
-        for d in docentes
-    ]
-    supabase.table("docente").insert(rows).execute()
-
-
-def _inserir_componentes(ppc_id: str, componentes: list) -> None:
+def _inserir_componentes(ppc_id: str, componentes: list) -> dict[str, str]:
     """
-    Insere cada componente curricular e, em seguida,
-    suas referências bibliográficas.
+    Insere cada componente curricular e suas referências bibliográficas.
+
+    Os campos `pre_requisito_codigo` e `co_requisito_codigo` são excluídos
+    do insert pois não existem na tabela `componente_curricular` — as
+    dependências são persistidas separadamente em `componente_dependencia`.
+
+    Returns:
+        Mapa {codigo_do_componente: uuid_inserido} para uso posterior
+        na criação dos vínculos docente_componente e componente_dependencia.
     """
+    componente_id_por_codigo: dict[str, str] = {}
+
     for componente in componentes:
         bibliografias = componente.bibliografias
 
-        # Remove as bibliografias do dict antes de inserir o componente
-        dados_componente = componente.model_dump(exclude={"bibliografias"}, exclude_none=True)
+        # Exclui os campos auxiliares de dependência e bibliografias antes de inserir
+        dados_componente = componente.model_dump(
+            exclude={"bibliografias", "pre_requisito_codigo", "co_requisito_codigo"},
+            exclude_none=True,
+        )
         dados_componente["ppc_id"] = ppc_id
 
         response = supabase.table("componente_curricular").insert(dados_componente).execute()
         componente_id = response.data[0]["id"]
+        componente_id_por_codigo[componente.codigo] = componente_id
 
         _inserir_bibliografias(componente_id, bibliografias)
+
+    return componente_id_por_codigo
 
 
 def _inserir_bibliografias(componente_id: str, bibliografias: list) -> None:
@@ -107,6 +124,107 @@ def _inserir_bibliografias(componente_id: str, bibliografias: list) -> None:
         for b in bibliografias
     ]
     supabase.table("bibliografia").insert(rows).execute()
+
+
+def _inserir_dependencias_componentes(
+    componente_id_por_codigo: dict[str, str],
+    componentes: list,
+) -> None:
+    """
+    Cria os vínculos na tabela `componente_dependencia` para todos os
+    componentes que possuem pré-requisito ou co-requisito declarado.
+
+    Schema da tabela:
+      - componente_base_id: o componente que é o requisito (o que vem antes)
+      - componente_alvo_id: o componente que depende do base (o atual)
+      - tipo_vinculo: "pre_requisito" ou "co_requisito"
+
+    Componentes cujo código de dependência não está no mapa são ignorados.
+    """
+    rows = []
+
+    for componente in componentes:
+        alvo_id = componente_id_por_codigo.get(componente.codigo)
+        if not alvo_id:
+            continue
+
+        if componente.pre_requisito_codigo:
+            base_id = componente_id_por_codigo.get(componente.pre_requisito_codigo)
+            if base_id:
+                rows.append({
+                    "componente_base_id": base_id,
+                    "componente_alvo_id": alvo_id,
+                    "tipo_vinculo":       "pre_requisito",
+                })
+
+        if componente.co_requisito_codigo:
+            base_id = componente_id_por_codigo.get(componente.co_requisito_codigo)
+            if base_id:
+                rows.append({
+                    "componente_base_id": base_id,
+                    "componente_alvo_id": alvo_id,
+                    "tipo_vinculo":       "co_requisito",
+                })
+
+    if rows:
+        supabase.table("componente_dependencia").insert(rows).execute()
+
+
+def _inserir_docentes(ppc_id: str, docentes: list) -> dict[str, str]:
+    """
+    Insere todos os docentes vinculados ao PPC.
+
+    Returns:
+        Mapa {nome_do_docente: uuid_inserido} para uso posterior
+        na criação dos vínculos docente_componente.
+    """
+    if not docentes:
+        return {}
+
+    rows = [
+        {
+            **d.model_dump(
+                exclude={"componentes_ministrados"}, exclude_none=True
+            ),
+            "ppc_id": ppc_id,
+        }
+        for d in docentes
+    ]
+    response = supabase.table("docente").insert(rows).execute()
+
+    # Constrói o mapa nome → id a partir dos registros retornados pelo banco
+    return {row["nome"]: row["id"] for row in response.data}
+
+
+def _inserir_vinculos_docente_componente(
+    docente_id_por_nome: dict[str, str],
+    componente_id_por_codigo: dict[str, str],
+    docentes: list,
+) -> None:
+    """
+    Cria os vínculos na tabela docente_componente cruzando os IDs
+    de docentes e componentes que foram inseridos nessa sessão.
+
+    Componentes referenciados mas não encontrados no mapa (ex.: código
+    inválido ou componente não cadastrado) são silenciosamente ignorados.
+    """
+    rows = []
+    for docente in docentes:
+        docente_id = docente_id_por_nome.get(docente.nome)
+        if not docente_id:
+            continue
+
+        for codigo in docente.componentes_ministrados:
+            componente_id = componente_id_por_codigo.get(codigo)
+            if not componente_id:
+                continue
+            rows.append({
+                "docente_id":     docente_id,
+                "componente_id":  componente_id,
+            })
+
+    if rows:
+        supabase.table("docente_componente").insert(rows).execute()
 
 
 def _inserir_ambientes(ppc_id: str, ambientes: list) -> None:
