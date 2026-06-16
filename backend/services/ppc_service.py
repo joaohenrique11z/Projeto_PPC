@@ -9,8 +9,10 @@ A inserção é sequencial seguindo a ordem de dependência das chaves estrangei
   ppc → ambientes → itens_infraestrutura
 """
 
+from datetime import datetime
 from database import supabase
 from models.ppc import PPCPayload
+
 
 
 def salvar_ppc(payload: PPCPayload) -> dict:
@@ -57,6 +59,123 @@ def deletar_ppc(ppc_id: str) -> None:
     response = supabase.table("ppc").delete().eq("id", ppc_id).execute()
     if not response.data:
         raise ValueError(f"PPC com id {ppc_id} não encontrado ou já deletado.")
+        
+def duplicar_ppc(ppc_id: str) -> dict:
+    """
+    Duplica um PPC existente e todas as suas dependências no Supabase.
+    Retorna um dicionário com os dados básicos do novo PPC gerado.
+    """
+    # 1. Copiar PPC
+    old_ppc = supabase.table("ppc").select("*").eq("id", ppc_id).execute().data
+    if not old_ppc:
+        raise ValueError("PPC não encontrado")
+    
+    ppc_data = old_ppc[0]
+    del ppc_data["id"]
+    nome_atual = ppc_data.get("nome_curso") or "PPC sem nome"
+    ppc_data["nome_curso"] = f"{nome_atual} - Cópia"
+    ppc_data["status_curso"] = "Rascunho"
+    ppc_data["data_criacao"] = datetime.utcnow().isoformat()
+    ppc_data["data_ultima_atualizacao"] = datetime.utcnow().isoformat()
+    
+    new_ppc = supabase.table("ppc").insert(ppc_data).execute().data[0]
+    new_ppc_id = new_ppc["id"]
+
+    # 2. Copiar Membros Institucionais
+    membros = supabase.table("membro_institucional").select("*").eq("ppc_id", ppc_id).execute().data
+    for m in membros:
+        del m["id"]
+        m["ppc_id"] = new_ppc_id
+    if membros:
+        supabase.table("membro_institucional").insert(membros).execute()
+
+    # 3. Copiar Coordenação
+    coords = supabase.table("coordenacao").select("*").eq("ppc_id", ppc_id).execute().data
+    for c in coords:
+        if "id" in c:
+            del c["id"]
+        c["ppc_id"] = new_ppc_id
+    if coords:
+        supabase.table("coordenacao").insert(coords).execute()
+
+    # 4. Copiar Ambientes e Itens de Infraestrutura
+    ambientes = supabase.table("ambiente").select("*").eq("ppc_id", ppc_id).execute().data
+    for amb in ambientes:
+        old_amb_id = amb["id"]
+        del amb["id"]
+        amb["ppc_id"] = new_ppc_id
+        new_amb = supabase.table("ambiente").insert(amb).execute().data[0]
+        
+        itens = supabase.table("item_infraestrutura").select("*").eq("ambiente_id", old_amb_id).execute().data
+        for item in itens:
+            del item["id"]
+            item["ambiente_id"] = new_amb["id"]
+        if itens:
+            supabase.table("item_infraestrutura").insert(itens).execute()
+
+    # 5. Copiar Componentes e Bibliografias
+    componentes = supabase.table("componente_curricular").select("*").eq("ppc_id", ppc_id).execute().data
+    map_componentes = {}
+    for comp in componentes:
+        old_comp_id = comp["id"]
+        del comp["id"]
+        comp["ppc_id"] = new_ppc_id
+        new_comp = supabase.table("componente_curricular").insert(comp).execute().data[0]
+        map_componentes[old_comp_id] = new_comp["id"]
+        
+        bibs = supabase.table("bibliografia").select("*").eq("componente_id", old_comp_id).execute().data
+        for b in bibs:
+            del b["id"]
+            b["componente_id"] = new_comp["id"]
+        if bibs:
+            supabase.table("bibliografia").insert(bibs).execute()
+
+    # 6. Copiar Docentes
+    docentes = supabase.table("docente").select("*").eq("ppc_id", ppc_id).execute().data
+    map_docentes = {}
+    for doc in docentes:
+        old_doc_id = doc["id"]
+        del doc["id"]
+        doc["ppc_id"] = new_ppc_id
+        new_doc = supabase.table("docente").insert(doc).execute().data[0]
+        map_docentes[old_doc_id] = new_doc["id"]
+
+    # 7. Copiar Vínculos (Docente - Componente)
+    if map_componentes and map_docentes:
+        old_doc_ids = list(map_docentes.keys())
+        vinculos = supabase.table("docente_componente").select("*").in_("docente_id", old_doc_ids).execute().data
+        new_vinculos = []
+        for v in vinculos:
+            if v["docente_id"] in map_docentes and v["componente_id"] in map_componentes:
+                new_vinculos.append({
+                    "docente_id": map_docentes[v["docente_id"]],
+                    "componente_id": map_componentes[v["componente_id"]]
+                })
+        if new_vinculos:
+            supabase.table("docente_componente").insert(new_vinculos).execute()
+
+    # 8. Copiar Dependências (Componente - Componente)
+    if map_componentes:
+        old_comp_ids = list(map_componentes.keys())
+        deps = supabase.table("componente_dependencia").select("*").in_("componente_alvo_id", old_comp_ids).execute().data
+        new_deps = []
+        for d in deps:
+            if d["componente_base_id"] in map_componentes and d["componente_alvo_id"] in map_componentes:
+                new_deps.append({
+                    "componente_base_id": map_componentes[d["componente_base_id"]],
+                    "componente_alvo_id": map_componentes[d["componente_alvo_id"]],
+                    "tipo_vinculo": d["tipo_vinculo"]
+                })
+        if new_deps:
+            supabase.table("componente_dependencia").insert(new_deps).execute()
+
+    return {
+        "id": new_ppc["id"],
+        "nome_curso": new_ppc.get("nome_curso"),
+        "status_curso": new_ppc.get("status_curso"),
+        "data_ultima_atualizacao": new_ppc.get("data_ultima_atualizacao")
+    }
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

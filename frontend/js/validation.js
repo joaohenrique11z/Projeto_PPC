@@ -50,6 +50,10 @@ const TAB_FIELD_CHECKS = [
     tabLabel:      "Situação e Avaliação do Curso",
     formSelectors: ["#form-situacao"],
   },
+  {
+    tabLabel:      "Corpo Docente",
+    formSelectors: ["#form-coordenacao"],
+  },
 ];
 
 // IDs of the validation error modal and its close button.
@@ -281,7 +285,7 @@ function handleSubmitValidation(event) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Attach validation to the "Enviar PPC" sidebar button.
+  // Attach validation to the "Salvar PPC" sidebar button.
   const submitBtn = document.getElementById(SUBMIT_BTN_ID);
   if (submitBtn) {
     submitBtn.addEventListener("click", handleSubmitValidation);
@@ -291,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  // Attach close behaviour to the validation modal's "Entendido" button.
+  // Attach close behaviour to the validation modal's "Corrigir" button.
   const closeBtn = document.getElementById(MODAL_CLOSE_BTN);
   if (closeBtn) {
     closeBtn.addEventListener("click", closeValidationModal);
@@ -302,6 +306,16 @@ document.addEventListener("DOMContentLoaded", () => {
   if (modal) {
     modal.addEventListener("click", (event) => {
       if (event.target === modal) closeValidationModal();
+    });
+  }
+
+  // "Enviar mesmo assim" — fecha o warning e dispara o envio ignorando os erros.
+  const btnEnviarMesmoAssim = document.getElementById("btn-enviar-mesmo-assim");
+  if (btnEnviarMesmoAssim) {
+    btnEnviarMesmoAssim.addEventListener("click", () => {
+      closeValidationModal();
+      console.info("[validation.js] User chose to send despite warnings. Dispatching 'ppc:submit'.");
+      document.dispatchEvent(new CustomEvent("ppc:submit", { bubbles: true }));
     });
   }
 

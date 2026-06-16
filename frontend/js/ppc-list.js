@@ -48,12 +48,159 @@
         return data.toLocaleDateString('pt-BR');
     }
 
+    /**
+     * Converte string de data ISO para timestamp numérico
+     */
+    function converterDataParaTimestamp(dataISO) {
+        if (!dataISO) return Date.now();
+        try {
+            return new Date(dataISO).getTime();
+        } catch {
+            return Date.now();
+        }
+    }
+
+    /* ================================================================== */
+    /* CARREGAMENTO DE DADOS DA API                                       */
+    /* ================================================================== */
+
+    /**
+     * Carrega todos os PPCs do banco de dados via API
+     * Executa automaticamente quando a página é carregada
+     */
+    async function carregarPPCsDaAPI() {
+        try {
+            const response = await fetch(`${API_BASE}/ppc`);
+            
+            if (!response.ok) {
+                throw new Error(`Erro ao carregar PPCs: ${response.status}`);
+            }
+
+            const dados = await response.json();
+
+            // Mapeia os dados da API para o formato esperado pelo código
+            ppcs = dados.map(ppc => ({
+                id: ppc.id,
+                nome: ppc.nome_curso || 'PPC sem nome',
+                ano: new Date(ppc.data_ultima_atualizacao || new Date()).getFullYear(),
+                status: ppc.status_curso || 'Rascunho',
+                dataCriacao: converterDataParaTimestamp(ppc.data_criacao),
+                dataAtualizacao: converterDataParaTimestamp(ppc.data_ultima_atualizacao),
+                dados: {} // Dados completos do PPC (carregados quando necessário)
+            }));
+
+            renderizarTabela();
+        } catch (erro) {
+            console.error('Erro ao carregar PPCs da API:', erro);
+            exibirNotificacao('Erro ao carregar lista de PPCs', 'erro');
+            // Renderiza tabela vazia em caso de erro
+            ppcs = [];
+            renderizarTabela();
+        }
+    }
+
     /* ================================================================== */
     /* GERENCIAMENTO DE PPCs                                              */
     /* ================================================================== */
 
     /**
-     * Cria um novo PPC vazio
+     * Cria um novo PPC no banco de dados via API
+     * Aguarda a resposta e atualiza a lista
+     */
+    async function criarNovoPPCViaAPI() {
+        try {
+            alternarLoadingBotao(btnNovoPPC, true);
+
+            const response = await fetch(`${API_BASE}/ppc/novo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    nome_curso: `Novo PPC ${ppcs.length + 1}`
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao criar PPC: ${response.status}`);
+            }
+
+            const novoPPC = await response.json();
+
+            // Mapeia o PPC retornado da API para o formato interno
+            const ppcFormatado = {
+                id: novoPPC.id,
+                nome: novoPPC.nome_curso || 'PPC sem nome',
+                ano: new Date(novoPPC.data_ultima_atualizacao || new Date()).getFullYear(),
+                status: novoPPC.status_curso || 'Rascunho',
+                dataCriacao: converterDataParaTimestamp(novoPPC.data_criacao),
+                dataAtualizacao: converterDataParaTimestamp(novoPPC.data_ultima_atualizacao),
+                dados: {}
+            };
+
+            // Adiciona o PPC à lista
+            ppcs.unshift(ppcFormatado); // Adiciona no início da lista
+            renderizarTabela();
+
+            exibirNotificacao('PPC criado com sucesso!', 'sucesso');
+            console.log('Novo PPC criado:', ppcFormatado);
+
+        } catch (erro) {
+            console.error('Erro ao criar PPC via API:', erro);
+            exibirNotificacao('Erro ao criar PPC', 'erro');
+        } finally {
+            alternarLoadingBotao(btnNovoPPC, false);
+        }
+    }
+
+    /**
+     * Duplica um PPC no banco de dados via API
+     * Aguarda a resposta e atualiza a lista
+     */
+    async function duplicarPPCViaAPI(id) {
+        try {
+            // Pode opcionalmente mostrar loading em algum lugar
+            // alert("Duplicando PPC...");
+            const response = await fetch(`${API_BASE}/ppc/${id}/duplicar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao duplicar PPC: ${response.status}`);
+            }
+
+            const ppcDuplicado = await response.json();
+
+            // Mapeia o PPC retornado da API para o formato interno
+            const ppcFormatado = {
+                id: ppcDuplicado.id,
+                nome: ppcDuplicado.nome_curso || 'PPC sem nome',
+                ano: new Date(ppcDuplicado.data_ultima_atualizacao || new Date()).getFullYear(),
+                status: ppcDuplicado.status_curso || 'Rascunho',
+                dataCriacao: converterDataParaTimestamp(ppcDuplicado.data_criacao),
+                dataAtualizacao: converterDataParaTimestamp(ppcDuplicado.data_ultima_atualizacao),
+                dados: {}
+            };
+
+            // Adiciona o PPC à lista
+            ppcs.unshift(ppcFormatado); // Adiciona no início da lista
+            renderizarTabela();
+
+            exibirNotificacao('PPC duplicado com sucesso!', 'sucesso');
+            console.log('PPC duplicado:', ppcFormatado);
+
+        } catch (erro) {
+            console.error('Erro ao duplicar PPC via API:', erro);
+            exibirNotificacao('Erro ao duplicar PPC', 'erro');
+        }
+    }
+
+    /**
+     * Cria um novo PPC vazio (DEPRECATED - usar criarNovoPPCViaAPI)
+     * Mantido para compatibilidade, mas não é mais usado
      */
     function criarNovoPPC() {
         const novoPPC = {
@@ -293,10 +440,10 @@
     /* EVENT LISTENERS                                                     */
     /* ================================================================== */
 
-    // Botão "Novo PPC" - cria um novo PPC
+    // Botão "Novo PPC" - cria um novo PPC via API
     if (btnNovoPPC) {
         btnNovoPPC.addEventListener('click', () => {
-            criarNovoPPC();
+            criarNovoPPCViaAPI();
         });
     }
 
@@ -304,7 +451,7 @@
     if (btnCriarPPCVazio) {
         btnCriarPPCVazio.addEventListener('click', (e) => {
             e.preventDefault();
-            criarNovoPPC();
+            criarNovoPPCViaAPI();
         });
     }
 
@@ -321,7 +468,7 @@
         if (acaoModal === 'delete') {
             await deletarPPC(ppcIdModal);
         } else if (acaoModal === 'duplicate') {
-            duplicarPPC(ppcIdModal);
+            duplicarPPCViaAPI(ppcIdModal);
             fecharModalAcao();
         }
     });
@@ -340,7 +487,8 @@
     /* ================================================================== */
 
     document.addEventListener('DOMContentLoaded', () => {
-        renderizarTabela();
+        // Carrega os PPCs da API automaticamente quando a página é carregada
+        carregarPPCsDaAPI();
     });
 
 })();

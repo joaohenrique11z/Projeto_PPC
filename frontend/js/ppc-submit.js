@@ -177,29 +177,14 @@
         }
     }
 
-    // Botão de confirmação final no modal
+    /**
+     * Aguarda o evento 'ppc:submit' despachado pelo validation.js
+     * somente após todas as validações terem passado.
+     * O botão "Enviar PPC" NÃO abre o modal de confirmação diretamente —
+     * isso é responsabilidade exclusiva do validation.js.
+     */
     document.addEventListener('DOMContentLoaded', function () {
-        const btnConfirmar = document.getElementById('btn-confirmar-envio');
-        if (btnConfirmar) {
-            btnConfirmar.addEventListener('click', submeterPPC);
-        }
-
-        // Botão "Enviar PPC" na sidebar abre o modal de confirmação
-        const btnEnviar = document.getElementById('btn-enviar-ppc');
-        const modalConfirmar = document.getElementById('modal-confirmar-envio');
-        const btnCancelar = document.getElementById('btn-cancelar-envio');
-
-        if (btnEnviar && modalConfirmar) {
-            btnEnviar.addEventListener('click', () => {
-                modalConfirmar.classList.remove('hidden');
-            });
-        }
-
-        if (btnCancelar && modalConfirmar) {
-            btnCancelar.addEventListener('click', () => {
-                modalConfirmar.classList.add('hidden');
-            });
-        }
+        document.addEventListener('ppc:submit', submeterPPC);
     });
 
 })();
