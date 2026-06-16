@@ -333,6 +333,118 @@ def duplicar_ppc(ppc_id: str) -> dict:
         "data_ultima_atualizacao": new_ppc.get("data_ultima_atualizacao")
     }
 
+def aplicar_delta_ppc(ppc_id: str, delta: dict) -> dict:
+    """
+    Aplica um delta (mudanças parciais) a um PPC existente.
+
+    O delta é um dicionário parcial contendo apenas os campos/arrays que foram alterados.
+    Campos não presentes no delta são ignorados (não atualizados).
+
+    Estratégia para arrays (membros, componentes, docentes, ambientes):
+    - Se presente no delta, DELETE todos os antigos + INSERT os novos (reutiliza logic de salvar_ppc)
+    - Se não presente no delta, deixa intocado
+
+    Estratégia para campos simples (ppc.nome_curso, ppc.ch_total_relogio, etc):
+    - Se presente no delta, UPDATE direto
+    - Se não presente no delta, deixa intocado
+
+    Args:
+        ppc_id: UUID do PPC a atualizar
+        delta: Dicionário com campos alterados, e.g.:
+            {
+                "ppc": {"nome_curso": "novo nome", "ch_total_relogio": 2400},
+                "membros": [...],  # se vazio, deleta todos os membros
+                "componentes": [...],  # se omitido, não toca em componentes
+            }
+
+    Returns:
+        {"success": True, "ppc_id": ppc_id, "version": timestamp}
+
+    Raises:
+        ValueError: Se PPC não existir
+    """
+    # Verifica se PPC existe
+    ppc_check = supabase.table("ppc").select("id").eq("id", ppc_id).execute().data
+    if not ppc_check:
+        raise ValueError(f"PPC com id {ppc_id} não encontrado")
+
+    # 1. Atualizar campos simples do PPC (se presentes no delta)
+    if "ppc" in delta and delta["ppc"]:
+        update_data = delta["ppc"]
+        update_data["data_ultima_atualizacao"] = datetime.utcnow().isoformat()
+        supabase.table("ppc").update(update_data).eq("id", ppc_id).execute()
+
+    # 2. Membros: se presente no delta, delete all + insert new
+    if "membros" in delta:
+        supabase.table("membro_institucional").delete().eq("ppc_id", ppc_id).execute()
+        if delta["membros"]:
+            _inserir_membros(ppc_id, delta["membros"])
+
+    # 3. Coordenação: se presente no delta, delete + insert new
+    if "coordenacao" in delta:
+        supabase.table("coordenacao").delete().eq("ppc_id", ppc_id).execute()
+        if delta["coordenacao"]:
+            _inserir_coordenacao(ppc_id, delta["coordenacao"])
+
+    # 4. Componentes: se presente, delete all (com cascata) + insert new
+    if "componentes" in delta:
+        # Coleta IDs dos componentes atuais para deleção em cascata
+        comp_ids = [
+            c["id"] for c in
+            supabase.table("componente_curricular").select("id").eq("ppc_id", ppc_id).execute().data
+        ]
+        if comp_ids:
+            supabase.table("componente_dependencia").delete().in_("componente_alvo_id", comp_ids).execute()
+            supabase.table("componente_dependencia").delete().in_("componente_base_id", comp_ids).execute()
+            supabase.table("bibliografia").delete().in_("componente_id", comp_ids).execute()
+        supabase.table("componente_curricular").delete().eq("ppc_id", ppc_id).execute()
+
+        # Reinsere componentes e dependências
+        if delta["componentes"]:
+            componente_id_por_codigo = _inserir_componentes(ppc_id, delta["componentes"])
+            _inserir_dependencias_componentes(componente_id_por_codigo, delta["componentes"])
+
+    # 5. Docentes: se presente, delete all (com cascata) + insert new
+    if "docentes" in delta:
+        doc_ids = [
+            d["id"] for d in
+            supabase.table("docente").select("id").eq("ppc_id", ppc_id).execute().data
+        ]
+        if doc_ids:
+            supabase.table("docente_componente").delete().in_("docente_id", doc_ids).execute()
+        supabase.table("docente").delete().eq("ppc_id", ppc_id).execute()
+
+        # Reinsere docentes e vínculos (precisa de componentes já existentes)
+        if delta["docentes"]:
+            # Busca IDs dos componentes existentes (não deletados)
+            comp_rows = supabase.table("componente_curricular").select("id, codigo").eq("ppc_id", ppc_id).execute().data
+            componente_id_por_codigo = {c["codigo"]: c["id"] for c in comp_rows}
+
+            docente_id_por_nome = _inserir_docentes(ppc_id, delta["docentes"])
+            _inserir_vinculos_docente_componente(docente_id_por_nome, componente_id_por_codigo, delta["docentes"])
+
+    # 6. Ambientes: se presente, delete all (com cascata) + insert new
+    if "ambientes" in delta:
+        amb_ids = [
+            a["id"] for a in
+            supabase.table("ambiente").select("id").eq("ppc_id", ppc_id).execute().data
+        ]
+        if amb_ids:
+            supabase.table("item_infraestrutura").delete().in_("ambiente_id", amb_ids).execute()
+        supabase.table("ambiente").delete().eq("ppc_id", ppc_id).execute()
+
+        # Reinsere ambientes
+        if delta["ambientes"]:
+            _inserir_ambientes(ppc_id, delta["ambientes"])
+
+    # Retorna sucesso com versioning
+    timestamp = datetime.utcnow().isoformat()
+    return {
+        "success": True,
+        "ppc_id": ppc_id,
+        "version": timestamp,
+        "message": "Alterações salvas automaticamente"
+    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
