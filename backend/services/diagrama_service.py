@@ -52,27 +52,39 @@ COR_PADRAO = "#E8E8E8"  # cinza claro para núcleos não mapeados
 # ── Helpers de banco de dados ─────────────────────────────────────────────────
 
 def _buscar_ppc(ppc_id: str) -> dict:
-    """Retorna os dados básicos do PPC (nome_curso, etc.)."""
+    """
+    Retorna os dados básicos do PPC (nome_curso, etc.).
+
+    Evita .single() porque no supabase-py v2 esse método lança APIError
+    quando nenhuma linha é encontrada, em vez de retornar lista vazia.
+    """
     response = (
         supabase
         .table("ppc")
         .select("id, nome_curso")
         .eq("id", ppc_id)
-        .single()
+        .limit(1)
         .execute()
     )
-    return response.data or {}
+    rows = response.data or []
+    return rows[0] if rows else {}
 
 
 def _buscar_componentes(ppc_id: str) -> list[dict]:
     """
     Retorna todos os componentes curriculares de um PPC ordenados por período.
 
+    Seleciona apenas colunas garantidas pelo schema base. O campo 'codigo'
+    é buscado separadamente porque pode não existir em versões antigas do banco.
+
     Args:
         ppc_id: UUID do PPC.
 
     Returns:
         Lista de dicionários com os campos do componente_curricular.
+
+    Raises:
+        RuntimeError: Se a query falhar no Supabase (ex: coluna inexistente).
     """
     response = (
         supabase
@@ -82,6 +94,29 @@ def _buscar_componentes(ppc_id: str) -> list[dict]:
         .order("periodo")
         .execute()
     )
+
+    # response.data é None (não lista vazia) quando a query falha silenciosamente.
+    # Isso pode ocorrer se uma coluna solicitada não existir no banco.
+    if response.data is None:
+        # Tenta query mínima para verificar se o problema é a coluna 'codigo'
+        fallback = (
+            supabase
+            .table("componente_curricular")
+            .select("id, nome, periodo, nucleo_curricular, ch_total_relogio")
+            .eq("ppc_id", ppc_id)
+            .order("periodo")
+            .execute()
+        )
+        if fallback.data is None:
+            raise RuntimeError(
+                f"Erro ao buscar componentes do PPC '{ppc_id}'. "
+                "Verifique as colunas da tabela componente_curricular."
+            )
+        # Normaliza: adiciona 'codigo' vazio para componentes sem essa coluna
+        for comp in (fallback.data or []):
+            comp.setdefault("codigo", "")
+        return fallback.data or []
+
     return response.data or []
 
 
@@ -89,8 +124,8 @@ def _buscar_dependencias(ppc_id: str) -> list[dict]:
     """
     Retorna todas as dependências entre componentes que pertencem ao PPC.
 
-    Filtra pelo ppc_id via join com componente_curricular porque a tabela
-    componente_dependencia não armazena ppc_id diretamente.
+    Usa duas queries em vez de join com nome de FK explícito, pois o nome
+    da constraint pode variar entre ambientes e causar erros 400 no Supabase.
 
     Args:
         ppc_id: UUID do PPC.
@@ -98,20 +133,31 @@ def _buscar_dependencias(ppc_id: str) -> list[dict]:
     Returns:
         Lista de dicts com componente_base_id e componente_alvo_id.
     """
-    response = (
+    # Passo 1: coleta os IDs de todos os componentes deste PPC
+    comp_response = (
         supabase
-        .table("componente_dependencia")
-        .select(
-            "componente_base_id, componente_alvo_id, "
-            "componente_curricular!componente_dependencia_componente_base_id_fkey(ppc_id)"
-        )
+        .table("componente_curricular")
+        .select("id")
+        .eq("ppc_id", ppc_id)
         .execute()
     )
-    deps = response.data or []
-    return [
-        d for d in deps
-        if d.get("componente_curricular", {}).get("ppc_id") == ppc_id
-    ]
+    ids_do_ppc = {
+        row["id"] for row in (comp_response.data or [])
+    }
+
+    if not ids_do_ppc:
+        return []
+
+    # Passo 2: busca dependências onde o componente_base pertence a este PPC.
+    # Usa .in_() com a lista de IDs para evitar joins com nome de FK.
+    dep_response = (
+        supabase
+        .table("componente_dependencia")
+        .select("componente_base_id, componente_alvo_id")
+        .in_("componente_base_id", list(ids_do_ppc))
+        .execute()
+    )
+    return dep_response.data or []
 
 
 def _agrupados_por_periodo(componentes: list[dict]) -> dict[int, list[dict]]:
