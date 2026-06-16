@@ -50,6 +50,15 @@ def salvar_ppc(payload: PPCPayload) -> dict:
     return {"ppc_id": ppc_id}
 
 
+def deletar_ppc(ppc_id: str) -> None:
+    """
+    Remove um PPC e todas as suas dependências (via CASCADE).
+    """
+    response = supabase.table("ppc").delete().eq("id", ppc_id).execute()
+    if not response.data:
+        raise ValueError(f"PPC com id {ppc_id} não encontrado ou já deletado.")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPERS PRIVADOS
 # ─────────────────────────────────────────────────────────────────────────────

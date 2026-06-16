@@ -128,9 +128,50 @@
     /**
      * Deleta um PPC
      */
-    function deletarPPC(id) {
-        ppcs = ppcs.filter(p => p.id !== id);
-        renderizarTabela();
+    async function deletarPPC(id) {
+        const originalText = btnConfirmarAcao.textContent;
+        btnConfirmarAcao.disabled = true;
+        btnConfirmarAcao.textContent = 'Excluindo...';
+
+        try {
+            const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:8000/api';
+            
+            // Verifica se o ID é longo o suficiente para ser um UUID do backend.
+            // Se for um ID falso criado localmente (menor que 20 chars), apenas remove localmente.
+            if (id.length > 20) {
+                const resposta = await fetch(`${apiBase}/ppc/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                });
+
+                if (!resposta.ok) {
+                    const erro = await resposta.json().catch(() => ({}));
+                    throw new Error(erro.detail || `Erro ${resposta.status}`);
+                }
+            }
+
+            // Remove o item da lista
+            ppcs = ppcs.filter(p => p.id !== id);
+            renderizarTabela();
+            
+            if (typeof exibirNotificacao === 'function') {
+                exibirNotificacao('PPC excluído com sucesso!', 'sucesso');
+            } else {
+                alert('PPC excluído com sucesso!');
+            }
+
+            fecharModalAcao();
+        } catch (erro) {
+            console.error('Erro ao deletar:', erro);
+            if (typeof exibirNotificacao === 'function') {
+                exibirNotificacao(`Erro ao excluir: ${erro.message}`, 'erro');
+            } else {
+                alert(`Erro ao excluir: ${erro.message}`);
+            }
+        } finally {
+            btnConfirmarAcao.disabled = false;
+            btnConfirmarAcao.textContent = originalText;
+        }
     }
 
     /**
@@ -267,23 +308,22 @@
         });
     }
 
-    // Listeners do modal
-    btnCancelarAcao.addEventListener('click', () => {
+    function fecharModalAcao() {
         modalAcao.classList.add('hidden');
         acaoModal = null;
         ppcIdModal = null;
-    });
+    }
 
-    btnConfirmarAcao.addEventListener('click', () => {
+    // Listeners do modal
+    btnCancelarAcao.addEventListener('click', fecharModalAcao);
+
+    btnConfirmarAcao.addEventListener('click', async () => {
         if (acaoModal === 'delete') {
-            deletarPPC(ppcIdModal);
+            await deletarPPC(ppcIdModal);
         } else if (acaoModal === 'duplicate') {
             duplicarPPC(ppcIdModal);
+            fecharModalAcao();
         }
-
-        modalAcao.classList.add('hidden');
-        acaoModal = null;
-        ppcIdModal = null;
     });
 
     // Fecha o modal ao clicar fora
