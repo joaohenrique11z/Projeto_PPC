@@ -129,6 +129,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 10);
     });
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // CARREGAMENTO DE DADOS DO PPC EXISTENTE (modo edição)
+    // Evento despachado pelo ppc-submit.js após GET /api/ppc/{id}
+    // ─────────────────────────────────────────────────────────────────────────
+
+    document.addEventListener('ppc:dados-componentes', (e) => {
+        // Converte do formato API (snake_case) para o formato interno (camelCase)
+        componentes = (e.detail || []).map(comp => ({
+            codigo:         comp.codigo         || '',
+            nome:           comp.nome           || '',
+            tipo:           comp.tipo           || 'Obrigatória',
+            periodo:        comp.periodo        || '',
+            nucleo:         comp.nucleo_curricular || '',
+            subNucleo:      comp.sub_nucleo     || '',
+            totalCreditos:  comp.creditos       || 0,
+            totalHorasAula: comp.ch_total_aula  || 0,
+            totalHoras:     comp.ch_total_relogio || 0,
+            hrTeoricas:     comp.ch_teorica     || 0,
+            hrPraticas:     comp.ch_pratica     || 0,
+            hrExtensao:     comp.ch_extensao    || 0,
+            ementa:         comp.ementa         || '',
+            // Converte bibliografias de objetos para texto (uma referência por linha)
+            bibBasica: (comp.bibliografias || [])
+                .filter(b => b.tipo === 'Basica')
+                .map(b => b.referencia_texto)
+                .join('\n'),
+            bibComplementar: (comp.bibliografias || [])
+                .filter(b => b.tipo === 'Complementar')
+                .map(b => b.referencia_texto)
+                .join('\n'),
+            preReq: comp.pre_requisito_codigo || '',
+            coReq:  comp.co_requisito_codigo  || '',
+        }));
+
+        sincronizarEstadoGlobal();
+        atualizarTabela();
+        atualizarSelectsRequisitos(null);
+    });
+
     function atualizarTabela() {
         tbody.replaceChildren();
 
