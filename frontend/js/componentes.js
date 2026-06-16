@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         componentes.forEach((comp, index) => {
             const tr = document.createElement('tr');
-            tr.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors';
+            tr.className = 'border-b border-gray-200 hover:bg-gray-50 transition-colors';
 
             const colunas = [
                 comp.codigo,
@@ -200,8 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
             colunas.forEach((texto, i) => {
                 const td = document.createElement('td');
                 td.className = i === 1
-                    ? 'py-3 px-3 text-gray-800 dark:text-gray-200 font-medium'
-                    : 'py-3 px-3 text-gray-800 dark:text-gray-200';
+                    ? 'py-3 px-3 text-gray-800 font-medium'
+                    : 'py-3 px-3 text-gray-800';
                 td.textContent = texto; // Proteção contra XSS
                 tr.appendChild(td);
             });
@@ -214,13 +214,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const btnEditar = document.createElement('button');
             btnEditar.type = 'button';
-            btnEditar.className = 'font-medium text-blue-600 dark:text-blue-400 hover:underline';
+            btnEditar.className = 'font-medium text-blue-600 hover:underline';
             btnEditar.textContent = 'Editar';
             btnEditar.onclick = () => editarComponente(index);
 
             const btnRemover = document.createElement('button');
             btnRemover.type = 'button';
-            btnRemover.className = 'font-medium text-red-600 dark:text-red-400 hover:underline';
+            btnRemover.className = 'font-medium text-red-600 hover:underline';
             btnRemover.textContent = 'Remover';
             btnRemover.onclick = () => removerComponente(index);
 

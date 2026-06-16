@@ -56,28 +56,28 @@
             /* --- estilos do botão sidebar --- */
             if (isActive) {
                 btn.classList.add(
-                    'bg-blue-50', 'dark:bg-blue-900/30',
-                    'text-blue-700', 'dark:text-blue-400',
-                    'border-l-4', 'border-blue-600', 'dark:border-blue-400',
+                    'bg-blue-50',
+                    'text-blue-700',
+                    'border-l-4', 'border-blue-600',
                     'font-semibold'
                 );
                 btn.classList.remove(
-                    'text-gray-600', 'dark:text-gray-400',
+                    'text-gray-600',
                     'border-l-4', 'border-transparent',
-                    'hover:bg-gray-100', 'dark:hover:bg-gray-700/50'
+                    'hover:bg-gray-100'
                 );
                 activeIndex = i;
             } else {
                 btn.classList.remove(
-                    'bg-blue-50', 'dark:bg-blue-900/30',
-                    'text-blue-700', 'dark:text-blue-400',
-                    'border-l-4', 'border-blue-600', 'dark:border-blue-400',
+                    'bg-blue-50',
+                    'text-blue-700',
+                    'border-l-4', 'border-blue-600',
                     'font-semibold'
                 );
                 btn.classList.add(
-                    'text-gray-600', 'dark:text-gray-400',
+                    'text-gray-600',
                     'border-l-4', 'border-transparent',
-                    'hover:bg-gray-100', 'dark:hover:bg-gray-700/50'
+                    'hover:bg-gray-100'
                 );
             }
         });

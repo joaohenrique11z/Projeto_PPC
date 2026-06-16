@@ -24,7 +24,7 @@
      */
     function createTdBorder(text) {
         const td = document.createElement('td');
-        td.className = 'py-2 px-3 border-r border-gray-200 dark:border-gray-700 dark:text-gray-300';
+        td.className = 'py-2 px-3 border-r border-gray-200';
         td.textContent = text;
         return td;
     }
@@ -36,7 +36,7 @@
      */
     function createTdLast(htmlContent) {
         const td = document.createElement('td');
-        td.className = 'py-2 px-3 dark:text-gray-300';
+        td.className = 'py-2 px-3';
         td.innerHTML = htmlContent;
         return td;
     }
@@ -46,7 +46,7 @@
      * @returns {string}
      */
     function trClass() {
-        return 'border-b border-gray-200 dark:border-gray-700';
+        return 'border-b border-gray-200';
     }
 
     /**
@@ -236,7 +236,7 @@
 
         componentes.forEach(comp => {
             const label = document.createElement('label');
-            label.className = 'comp-checkbox-label flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 py-1 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600/30 rounded px-1';
+            label.className = 'comp-checkbox-label flex items-center gap-2 text-sm text-gray-700 py-1 cursor-pointer hover:bg-gray-50 rounded px-1';
 
             const checkbox = document.createElement('input');
             checkbox.type    = 'checkbox';

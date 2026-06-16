@@ -359,11 +359,11 @@
 
         ppcs.forEach(ppc => {
             const tr = document.createElement('tr');
-            tr.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors';
+            tr.className = 'border-b border-gray-200 hover:bg-gray-50 transition-colors';
 
-            const tdClass = 'px-4 py-3 dark:text-gray-300';
-            const tdClassHidden = 'px-4 py-3 dark:text-gray-300 hidden sm:table-cell';
-            const tdClassMd = 'px-4 py-3 dark:text-gray-300 hidden md:table-cell';
+            const tdClass = 'px-4 py-3';
+            const tdClassHidden = 'px-4 py-3 hidden sm:table-cell';
+            const tdClassMd = 'px-4 py-3 hidden md:table-cell';
 
             const td1 = document.createElement('td');
             td1.className = tdClass;
@@ -383,8 +383,8 @@
             const spanStatus = document.createElement('span');
             spanStatus.className = `inline-block px-2.5 py-1 rounded-full text-xs font-medium ${
                 ppc.status === 'Rascunho'
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                    : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-green-100 text-green-800'
             }`;
             spanStatus.textContent = ppc.status;
             td3.appendChild(spanStatus);

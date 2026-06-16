@@ -24,8 +24,7 @@ const TABLE_CHECKS = [
   { tbodyId: "componentes-body",  label: "Grade Curricular"           },
   { tbodyId: "docentes-body",     label: "Docentes Cadastrados"       },
   { tbodyId: "ambientes-body",    label: "Ambientes Cadastrados"      },
-  { tbodyId: "itens-infra-body",  label: "Itens de Infraestrutura"    },
-];
+  { tbodyId: "itens-infra-body",  label: "Itens de Infraestrutura"    }];
 
 /**
  * Tab sections whose required fields (input, select, textarea[required])
@@ -53,8 +52,7 @@ const TAB_FIELD_CHECKS = [
   {
     tabLabel:      "Corpo Docente",
     formSelectors: ["#form-coordenacao"],
-  },
-];
+  }];
 
 // IDs of the validation error modal and its close button.
 const MODAL_ID              = "modal-validacao-envio";
@@ -201,22 +199,18 @@ function showValidationModal(errors) {
     "overflow-y-auto",
     "text-sm",
     "text-red-700",
-    "dark:text-red-400",
     "border",
     "border-red-200",
-    "dark:border-red-800/40",
     "rounded-lg",
     "bg-red-50",
-    "dark:bg-red-900/20",
-    "p-3",
-  ].join(" ");
+    "p-3"].join(" ");
 
   for (const message of errors) {
     const item = document.createElement("li");
     item.className = "flex items-start gap-2";
 
     const icon = document.createElement("span");
-    icon.className = "mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-400";
+    icon.className = "mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500";
 
     const textSpan = document.createElement("span");
     textSpan.textContent = message;
