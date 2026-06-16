@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from database import supabase
 from models.ppc import PPCPayload
-from services.ppc_service import salvar_ppc
+from services.ppc_service import salvar_ppc, duplicar_ppc
 
 router = APIRouter(prefix="/api/ppc", tags=["PPC"])
 
@@ -62,6 +62,26 @@ def criar_ppc_novo(request: NovoPPCRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao criar novo PPC: {str(exc)}",
+        )
+
+
+@router.post("/{ppc_id}/duplicar", status_code=status.HTTP_201_CREATED)
+def duplicar(ppc_id: str):
+    """
+    Duplica um PPC existente e todas as suas dependências.
+    """
+    try:
+        resultado = duplicar_ppc(ppc_id)
+        return resultado
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(val_err)
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao duplicar PPC: {str(exc)}",
         )
 
 
