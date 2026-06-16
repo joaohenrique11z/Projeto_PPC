@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from database import supabase
 from models.ppc import PPCPayload
-from services.ppc_service import salvar_ppc, duplicar_ppc
+from services.ppc_service import salvar_ppc, duplicar_ppc, deletar_ppc
 
 router = APIRouter(prefix="/api/ppc", tags=["PPC"])
 
@@ -122,4 +122,24 @@ def listar_ppcs():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao listar PPCs: {str(exc)}",
+        )
+
+
+@router.delete("/{ppc_id}", status_code=status.HTTP_200_OK)
+def deletar_ppc_endpoint(ppc_id: str):
+    """
+    Deleta um PPC a partir do seu ID.
+    """
+    try:
+        deletar_ppc(ppc_id)
+        return {"message": "PPC deletado com sucesso"}
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(ve),
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao deletar PPC: {str(exc)}",
         )
