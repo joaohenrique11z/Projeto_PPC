@@ -21,8 +21,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 from routes.ppc_routes import router as ppc_router
+from routes.diagrama_routes import router as diagrama_router
 
 app.include_router(ppc_router)
+app.include_router(diagrama_router)
 
 @app.get("/api/health")
 def health_check():

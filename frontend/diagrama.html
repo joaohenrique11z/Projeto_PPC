@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exportar Diagrama — Matriz Curricular</title>
+
+    <!-- Google Fonts -->
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ── Reset e variáveis ─────────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --clr-bg:        #0d1117;
+        --clr-surface:   #161b22;
+        --clr-border:    #30363d;
+        --clr-accent:    #1f6feb;
+        --clr-accent-h:  #388bfd;
+        --clr-text:      #e6edf3;
+        --clr-muted:     #8b949e;
+        --clr-success:   #3fb950;
+        --clr-error:     #f85149;
+        --radius:        10px;
+        --transition:    180ms ease;
+      }
+
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: var(--clr-bg);
+        color: var(--clr-text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      /* ── Card central ──────────────────────────────────────────────── */
+      .card {
+        background: var(--clr-surface);
+        border: 1px solid var(--clr-border);
+        border-radius: var(--radius);
+        padding: 2.5rem 3rem;
+        max-width: 520px;
+        width: 100%;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      }
+
+      .card__icon {
+        font-size: 2.4rem;
+        margin-bottom: 0.75rem;
+        display: block;
+      }
+
+      .card__title {
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+      }
+
+      .card__subtitle {
+        color: var(--clr-muted);
+        font-size: 0.9rem;
+        margin-bottom: 1.75rem;
+        line-height: 1.5;
+      }
+
+      /* ── Input de ppc_id ───────────────────────────────────────────── */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .field label {
+        font-size: 0.82rem;
+        font-weight: 500;
+        color: var(--clr-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .field input {
+        background: var(--clr-bg);
+        border: 1px solid var(--clr-border);
+        border-radius: 6px;
+        color: var(--clr-text);
+        font-family: inherit;
+        font-size: 0.95rem;
+        padding: 0.6rem 0.85rem;
+        transition: border-color var(--transition);
+        outline: none;
+        width: 100%;
+      }
+
+      .field input:focus {
+        border-color: var(--clr-accent);
+      }
+
+      .field input::placeholder {
+        color: var(--clr-muted);
+        opacity: 0.7;
+      }
+
+      /* ── Botão de exportar ─────────────────────────────────────────── */
+      #btn-exportar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        width: 100%;
+        padding: 0.75rem 1.25rem;
+        background: var(--clr-accent);
+        border: none;
+        border-radius: 6px;
+        color: #fff;
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background var(--transition), transform var(--transition);
+        margin-bottom: 1.25rem;
+      }
+
+      #btn-exportar:hover:not(:disabled) {
+        background: var(--clr-accent-h);
+        transform: translateY(-1px);
+      }
+
+      #btn-exportar:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      #btn-exportar:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      /* ── Spinner ───────────────────────────────────────────────────── */
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* ── Mensagem de status ────────────────────────────────────────── */
+      #status-msg {
+        font-size: 0.88rem;
+        border-radius: 6px;
+        padding: 0.6rem 0.9rem;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      #status-msg.success {
+        display: flex;
+        background: rgba(63,185,80,.12);
+        border: 1px solid rgba(63,185,80,.3);
+        color: var(--clr-success);
+      }
+
+      #status-msg.error {
+        display: flex;
+        background: rgba(248,81,73,.12);
+        border: 1px solid rgba(248,81,73,.3);
+        color: var(--clr-error);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <span class="card__icon">📊</span>
+      <h1 class="card__title">Exportar Diagrama de Matriz</h1>
+      <p class="card__subtitle">
+        Gera o fluxograma de pré-requisitos agrupado por período e exporta
+        como documento <strong>.docx</strong> pronto para impressão.
+      </p>
+
+      <div class="field">
+        <label for="ppc-id-input">ID do PPC (UUID)</label>
+        <input
+          id="ppc-id-input"
+          type="text"
+          placeholder="ex: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <button id="btn-exportar" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+        </svg>
+        Exportar Diagrama (.docx)
+      </button>
+
+      <div id="status-msg" role="alert" aria-live="polite"></div>
+    </div>
+
+    <script>
+      /**
+       * URL base da API FastAPI (rodando localmente).
+       * Ajuste a porta se necessário.
+       */
+      const API_BASE = "http://127.0.0.1:8000";
+
+      const btnExportar = document.getElementById("btn-exportar");
+      const ppcIdInput  = document.getElementById("ppc-id-input");
+      const statusMsg   = document.getElementById("status-msg");
+
+      /** Exibe uma mensagem de status com o estilo correto. */
+      function exibirStatus(tipo, texto) {
+        statusMsg.className = tipo;          // "success" | "error"
+        statusMsg.textContent = texto;
+      }
+
+      /** Oculta a mensagem de status. */
+      function ocultarStatus() {
+        statusMsg.className = "";
+        statusMsg.textContent = "";
+      }
+
+      /** Habilita ou desabilita o botão e troca label por spinner. */
+      function setCarregando(ativo) {
+        btnExportar.disabled = ativo;
+        if (ativo) {
+          btnExportar.innerHTML = `
+            <span class="spinner" aria-hidden="true"></span>
+            Gerando diagrama…
+          `;
+        } else {
+          btnExportar.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+            </svg>
+            Exportar Diagrama (.docx)
+          `;
+        }
+      }
+
+      /**
+       * Faz o fetch na API e força o download do arquivo .docx recebido.
+       *
+       * @param {string} ppcId - UUID do PPC.
+       */
+      async function exportarDiagrama(ppcId) {
+        ocultarStatus();
+        setCarregando(true);
+
+        try {
+          const url = `${API_BASE}/api/exportar-diagrama/${encodeURIComponent(ppcId)}`;
+          const response = await fetch(url, { method: "GET" });
+
+          if (!response.ok) {
+            // Tenta ler a mensagem de erro do JSON retornado pela API
+            let detalhe = `Erro ${response.status}`;
+            try {
+              const errJson = await response.json();
+              detalhe = errJson.detail || detalhe;
+            } catch (_) { /* mantém o código de status */ }
+            throw new Error(detalhe);
+          }
+
+          // Converte o stream binário em Blob
+          const blob = await response.blob();
+
+          // Extrai o nome do arquivo do header Content-Disposition (se disponível)
+          const disposition = response.headers.get("Content-Disposition") || "";
+          const nomeMatch   = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+          const nomeArquivo = nomeMatch ? nomeMatch[1].replace(/['"]/g, "") : "matriz_curricular.docx";
+
+          // Cria URL temporária e simula clique para download
+          const urlBlob = window.URL.createObjectURL(blob);
+          const link    = document.createElement("a");
+          link.href     = urlBlob;
+          link.download = nomeArquivo;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(urlBlob);
+
+          exibirStatus("success", "✓ Download iniciado com sucesso!");
+        } catch (err) {
+          exibirStatus("error", `✕ ${err.message}`);
+        } finally {
+          setCarregando(false);
+        }
+      }
+
+      btnExportar.addEventListener("click", () => {
+        const ppcId = ppcIdInput.value.trim();
+
+        if (!ppcId) {
+          exibirStatus("error", "✕ Informe o ID do PPC antes de exportar.");
+          ppcIdInput.focus();
+          return;
+        }
+
+        // Validação simples de formato UUID
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(ppcId)) {
+          exibirStatus("error", "✕ O ID informado não parece ser um UUID válido.");
+          ppcIdInput.focus();
+          return;
+        }
+
+        exportarDiagrama(ppcId);
+      });
+
+      // Permite acionar com Enter no campo de texto
+      ppcIdInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") btnExportar.click();
+      });
+    </script>
+  </body>
+</html>
