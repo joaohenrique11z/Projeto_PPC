@@ -239,7 +239,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label for="campus_name" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome do Campus *</label>
-                                <select id="campus_name" name="campus_name" required class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <select id="campus_name" name="campus_name" required data-autosave data-section="ppc" class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option value="">Selecione...</option>
                                     <option value="Belo Jardim">Campus Belo Jardim</option>
                                     <option value="Recife">Campus Recife</option>
@@ -261,7 +261,7 @@
                             </div>
                             <div>
                                 <label for="cnpj" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">CNPJ *</label>
-                                <input type="text" id="cnpj" name="cnpj" required placeholder="Ex: 10.767.239/0001-45"
+                                <input type="text" id="cnpj" name="cnpj" required placeholder="Ex: 10.767.239/0001-45" data-autosave data-section="ppc"
                                     class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                         </div>
@@ -358,7 +358,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label for="nome_curso" class="block text-sm text-gray-700 dark:text-gray-300 mb-1">Nome do Curso *</label>
-                                <input type="text" id="nome_curso" name="nome_curso" required placeholder="Ex: Engenharia de Software"
+                                <input type="text" id="nome_curso" name="nome_curso" required placeholder="Ex: Engenharia de Software" data-autosave data-section="ppc"
                                     class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
@@ -1450,9 +1450,17 @@
 <script src="/static/js/modal.js"></script>
 <script src="/static/js/componentes.js"></script>
 <script src="/static/js/theme.js"></script>
+<script src="/static/js/autosave.js"></script>
 <script src="/static/js/tabs.js"></script>
 <script src="/static/js/crud.js"></script>
 <script src="/static/js/ppc-submit.js"></script>
+
+<!-- Inicializar autosave após todos os scripts carregarem -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    autosaveManager.initializeAutosave();
+  });
+</script>
 
 </body>
 </html>
