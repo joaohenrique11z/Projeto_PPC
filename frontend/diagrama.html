@@ -105,7 +105,7 @@
         margin-top: 1px;
       }
 
-      /* ── Campo de input ─────────────────────────────────────────────────── */
+      /* ── Campo de select ────────────────────────────────────────────────── */
       .field {
         display: flex;
         flex-direction: column;
@@ -121,7 +121,7 @@
         letter-spacing: 0.07em;
       }
 
-      .field input {
+      .field select {
         background: var(--bg);
         border: 1px solid var(--border);
         border-radius: 6px;
@@ -132,15 +132,44 @@
         transition: border-color var(--tr), box-shadow var(--tr);
         outline: none;
         width: 100%;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.9rem center;
+        padding-right: 2.5rem;
       }
 
-      .field input:focus {
+      .field select:focus {
         border-color: var(--accent);
         box-shadow: 0 0 0 3px rgba(31,111,235,0.2);
       }
 
-      .field input::placeholder { color: var(--muted); opacity: 0.7; }
-      .field input.invalid { border-color: var(--error); }
+      .field select.invalid { border-color: var(--error); }
+
+      .field select option { background: var(--surface-2); color: var(--text); }
+
+      /* ── Indicador de carregamento do select ────────────────────────────── */
+      .select-loading {
+        font-size: 0.8rem;
+        color: var(--muted);
+        display: none;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.3rem;
+      }
+
+      .select-loading.visible { display: flex; }
+
+      .select-loading .spinner-sm {
+        width: 11px;
+        height: 11px;
+        border: 2px solid rgba(139,148,158,0.3);
+        border-top-color: var(--muted);
+        border-radius: 50%;
+        animation: spin 0.65s linear infinite;
+        flex-shrink: 0;
+      }
 
       /* ── Botão principal ────────────────────────────────────────────────── */
       #btn-exportar {
@@ -289,16 +318,16 @@
         </div>
       </div>
 
-      <!-- Input do PPC ID -->
+      <!-- Seletor de PPC -->
       <div class="field">
-        <label for="ppc-id-input">ID do PPC (UUID)</label>
-        <input
-          id="ppc-id-input"
-          type="text"
-          placeholder="ex: 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-          autocomplete="off"
-          spellcheck="false"
-        />
+        <label for="ppc-select">Selecionar PPC</label>
+        <select id="ppc-select">
+          <option value="">— Carregando PPCs… —</option>
+        </select>
+        <div class="select-loading visible" id="select-loading" aria-live="polite">
+          <span class="spinner-sm" aria-hidden="true"></span>
+          Carregando lista de PPCs…
+        </div>
       </div>
 
       <!-- Barra de progresso animada -->
@@ -337,14 +366,12 @@
       /** URL base da API FastAPI. Ajuste a porta se necessário. */
       const API_BASE = "http://127.0.0.1:8000";
 
-      const btnExportar  = document.getElementById("btn-exportar");
-      const ppcIdInput   = document.getElementById("ppc-id-input");
-      const statusMsg    = document.getElementById("status-msg");
-      const progressBar  = document.getElementById("progress-bar");
-      const linkLegado   = document.getElementById("link-legado");
-
-      /** Regex para validação básica de UUID v4. */
-      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const btnExportar   = document.getElementById("btn-exportar");
+      const ppcSelect     = document.getElementById("ppc-select");
+      const statusMsg     = document.getElementById("status-msg");
+      const progressBar   = document.getElementById("progress-bar");
+      const linkLegado    = document.getElementById("link-legado");
+      const selectLoading = document.getElementById("select-loading");
 
       /** Exibe uma mensagem de status (success | error | warning). */
       function exibirStatus(tipo, texto) {
@@ -381,25 +408,60 @@
       }
 
       /**
-       * Lê o valor do UUID do input e valida o formato.
+       * Carrega a lista de PPCs da API e popula o dropdown.
+       */
+      async function carregarListaPpcs() {
+        try {
+          const response = await fetch(`${API_BASE}/api/ppc`);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const ppcs = await response.json();
+
+          ppcSelect.innerHTML = "";
+
+          if (!ppcs || ppcs.length === 0) {
+            ppcSelect.innerHTML = `<option value="">— Nenhum PPC cadastrado —</option>`;
+            exibirStatus("warning", "Nenhum PPC encontrado. Crie um PPC primeiro.");
+            return;
+          }
+
+          // Opção padrão vazia
+          const optDefault = document.createElement("option");
+          optDefault.value = "";
+          optDefault.textContent = "— Selecione um PPC —";
+          ppcSelect.appendChild(optDefault);
+
+          // Adiciona cada PPC como opção
+          for (const ppc of ppcs) {
+            const opt = document.createElement("option");
+            opt.value = ppc.id;
+            const nome = ppc.nome_curso || "PPC sem nome";
+            const statusCurso = ppc.status_curso ? ` [${ppc.status_curso}]` : "";
+            opt.textContent = `${nome}${statusCurso}`;
+            ppcSelect.appendChild(opt);
+          }
+
+        } catch (err) {
+          ppcSelect.innerHTML = `<option value="">— Erro ao carregar PPCs —</option>`;
+          exibirStatus("error", `Nao foi possivel carregar a lista de PPCs: ${err.message}`);
+        } finally {
+          selectLoading.classList.remove("visible");
+        }
+      }
+
+      /**
+       * Lê o PPC selecionado no dropdown e valida a seleção.
        *
-       * @returns {string|null} UUID válido ou null se inválido.
+       * @returns {string|null} UUID válido ou null se nenhum foi selecionado.
        */
       function obterPpcId() {
-        const ppcId = ppcIdInput.value.trim();
-        ppcIdInput.classList.remove("invalid");
+        const ppcId = ppcSelect.value;
+        ppcSelect.classList.remove("invalid");
 
         if (!ppcId) {
-          exibirStatus("error", "✕ Informe o ID do PPC antes de exportar.");
-          ppcIdInput.classList.add("invalid");
-          ppcIdInput.focus();
-          return null;
-        }
-
-        if (!UUID_REGEX.test(ppcId)) {
-          exibirStatus("error", "✕ O ID informado não é um UUID válido (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx).");
-          ppcIdInput.classList.add("invalid");
-          ppcIdInput.focus();
+          exibirStatus("error", "Selecione um PPC antes de exportar.");
+          ppcSelect.classList.add("invalid");
+          ppcSelect.focus();
           return null;
         }
 
@@ -409,10 +471,7 @@
       /**
        * Faz o fetch no endpoint e dispara o download automático do .docx.
        *
-       * A geração pode levar alguns segundos pois envolve renderização
-       * de HTML com Playwright e execução do Graphviz no servidor.
-       *
-       * @param {string} endpoint - Caminho relativo da API (ex: "/api/exportar-matrizes-unificadas/uuid").
+       * @param {string} endpoint - Caminho relativo da API.
        * @param {string} nomeArquivoFallback - Nome padrão se o header não estiver presente.
        */
       async function baixarDocx(endpoint, nomeArquivoFallback) {
@@ -428,6 +487,13 @@
               const errJson = await response.json();
               detalhe = errJson.detail || detalhe;
             } catch (_) { /* mantém o código de status */ }
+
+            // Mensagem mais amigável para o caso de PPC sem componentes
+            if (response.status === 404) {
+              const nomeSelecionado = ppcSelect.options[ppcSelect.selectedIndex]?.text || "este PPC";
+              detalhe = `O PPC "${nomeSelecionado}" nao possui disciplinas cadastradas. Adicione componentes curriculares na aba "Matriz Curricular" antes de exportar.`;
+            }
+
             throw new Error(detalhe);
           }
 
@@ -450,10 +516,10 @@
           link.remove();
           window.URL.revokeObjectURL(urlBlob);
 
-          exibirStatus("success", "✓ Download iniciado com sucesso! Verifique sua pasta de Downloads.");
+          exibirStatus("success", "Download iniciado com sucesso! Verifique sua pasta de Downloads.");
 
         } catch (err) {
-          exibirStatus("error", `✕ ${err.message}`);
+          exibirStatus("error", err.message);
         } finally {
           setCarregando(false);
         }
@@ -469,16 +535,14 @@
         baixarDocx(endpoint, "matrizes_curriculares.docx");
       });
 
-      // Permite acionar com Enter no campo de texto
-      ppcIdInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") btnExportar.click();
-      });
-
-      // Remove o estilo de erro ao começar a digitar
-      ppcIdInput.addEventListener("input", () => {
-        ppcIdInput.classList.remove("invalid");
+      // Remove o estilo de erro ao mudar a seleção
+      ppcSelect.addEventListener("change", () => {
+        ppcSelect.classList.remove("invalid");
         ocultarStatus();
       });
+
+      // Carrega a lista de PPCs ao abrir a página
+      carregarListaPpcs();
 
       // Link para a rota antiga (Diagrama 2 isolado)
       linkLegado.addEventListener("click", (e) => {
