@@ -52,6 +52,163 @@ def salvar_ppc(payload: PPCPayload) -> dict:
     return {"ppc_id": ppc_id}
 
 
+def carregar_ppc(ppc_id: str) -> dict:
+    """
+    Busca um PPC completo com todas as entidades filhas no Supabase.
+
+    Retorna o payload no mesmo formato do PPCPayload para ser consumido
+    pelo frontend na tela de edição.
+
+    Args:
+        ppc_id: UUID do PPC a ser carregado.
+
+    Returns:
+        Dicionário com ppc, coordenacao, membros, componentes, docentes e ambientes.
+
+    Raises:
+        ValueError: Se o PPC não for encontrado.
+    """
+    ppc_rows = supabase.table("ppc").select("*").eq("id", ppc_id).execute().data
+    if not ppc_rows:
+        raise ValueError("PPC não encontrado")
+    ppc_data = {k: v for k, v in ppc_rows[0].items() if k not in ("id",)}
+
+    coord_rows = supabase.table("coordenacao").select("*").eq("ppc_id", ppc_id).execute().data
+    coordenacao = {k: v for k, v in coord_rows[0].items() if k not in ("id", "ppc_id")} if coord_rows else None
+
+    membro_rows = supabase.table("membro_institucional").select("*").eq("ppc_id", ppc_id).execute().data
+    membros = [
+        {k: v for k, v in m.items() if k not in ("id", "ppc_id")}
+        for m in membro_rows
+    ]
+
+    comp_rows = supabase.table("componente_curricular").select("*").eq("ppc_id", ppc_id).execute().data
+    # Mapa UUID → código para resolver dependências
+    id_para_codigo = {c["id"]: c.get("codigo") for c in comp_rows}
+
+    componentes = []
+    for comp in comp_rows:
+        comp_id = comp["id"]
+
+        bibs = supabase.table("bibliografia").select("*").eq("componente_id", comp_id).execute().data
+        deps = supabase.table("componente_dependencia").select("*").eq("componente_alvo_id", comp_id).execute().data
+
+        pre_req_codigo = None
+        co_req_codigo = None
+        for dep in deps:
+            if dep["tipo_vinculo"] == "pre_requisito":
+                pre_req_codigo = id_para_codigo.get(dep["componente_base_id"])
+            elif dep["tipo_vinculo"] == "co_requisito":
+                co_req_codigo = id_para_codigo.get(dep["componente_base_id"])
+
+        componentes.append({
+            **{k: v for k, v in comp.items() if k not in ("id", "ppc_id")},
+            "pre_requisito_codigo": pre_req_codigo,
+            "co_requisito_codigo": co_req_codigo,
+            "bibliografias": [
+                {"tipo": b["tipo"], "referencia_texto": b["referencia_texto"]}
+                for b in bibs
+            ],
+        })
+
+    doc_rows = supabase.table("docente").select("*").eq("ppc_id", ppc_id).execute().data
+    docentes = []
+    for doc in doc_rows:
+        doc_id = doc["id"]
+        vinculos = supabase.table("docente_componente").select("*").eq("docente_id", doc_id).execute().data
+        comp_codigos = [
+            id_para_codigo[v["componente_id"]]
+            for v in vinculos
+            if v["componente_id"] in id_para_codigo
+        ]
+        docentes.append({
+            **{k: v for k, v in doc.items() if k not in ("id", "ppc_id")},
+            "componentes_ministrados": comp_codigos,
+        })
+
+    amb_rows = supabase.table("ambiente").select("*").eq("ppc_id", ppc_id).execute().data
+    ambientes = []
+    for amb in amb_rows:
+        amb_id = amb["id"]
+        itens = supabase.table("item_infraestrutura").select("*").eq("ambiente_id", amb_id).execute().data
+        ambientes.append({
+            **{k: v for k, v in amb.items() if k not in ("id", "ppc_id")},
+            "itens": [
+                {k: v for k, v in item.items() if k not in ("id", "ambiente_id")}
+                for item in itens
+            ],
+        })
+
+    return {
+        "ppc": ppc_data,
+        "coordenacao": coordenacao,
+        "membros": membros,
+        "componentes": componentes,
+        "docentes": docentes,
+        "ambientes": ambientes,
+    }
+
+
+def atualizar_ppc(ppc_id: str, payload: PPCPayload) -> dict:
+    """
+    Atualiza um PPC existente usando estratégia delete + reinsert.
+
+    1. Apaga todas as entidades filhas na ordem correta de FK.
+    2. Atualiza os campos da tabela ppc.
+    3. Reinsere as entidades com os novos dados, reutilizando os helpers privados.
+
+    Args:
+        ppc_id: UUID do PPC a atualizar.
+        payload: Payload completo com os novos dados.
+
+    Returns:
+        Dicionário com o ppc_id atualizado.
+    """
+    # Coleta IDs das entidades filhas para deleção em cascata
+    comp_ids = [
+        c["id"] for c in
+        supabase.table("componente_curricular").select("id").eq("ppc_id", ppc_id).execute().data
+    ]
+    doc_ids = [
+        d["id"] for d in
+        supabase.table("docente").select("id").eq("ppc_id", ppc_id).execute().data
+    ]
+    amb_ids = [
+        a["id"] for a in
+        supabase.table("ambiente").select("id").eq("ppc_id", ppc_id).execute().data
+    ]
+
+    # Deleção respeitando a ordem das foreign keys
+    if doc_ids:
+        supabase.table("docente_componente").delete().in_("docente_id", doc_ids).execute()
+    if comp_ids:
+        supabase.table("componente_dependencia").delete().in_("componente_alvo_id", comp_ids).execute()
+        supabase.table("bibliografia").delete().in_("componente_id", comp_ids).execute()
+    supabase.table("componente_curricular").delete().eq("ppc_id", ppc_id).execute()
+    supabase.table("docente").delete().eq("ppc_id", ppc_id).execute()
+    if amb_ids:
+        supabase.table("item_infraestrutura").delete().in_("ambiente_id", amb_ids).execute()
+    supabase.table("ambiente").delete().eq("ppc_id", ppc_id).execute()
+    supabase.table("membro_institucional").delete().eq("ppc_id", ppc_id).execute()
+    supabase.table("coordenacao").delete().eq("ppc_id", ppc_id).execute()
+
+    # Atualiza os campos gerais do PPC
+    update_data = payload.ppc.model_dump(exclude_none=True)
+    update_data["data_ultima_atualizacao"] = datetime.utcnow().isoformat()
+    supabase.table("ppc").update(update_data).eq("id", ppc_id).execute()
+
+    # Reinsere todas as entidades filhas com os novos dados
+    _inserir_membros(ppc_id, payload.membros)
+    _inserir_coordenacao(ppc_id, payload.coordenacao)
+    componente_id_por_codigo = _inserir_componentes(ppc_id, payload.componentes)
+    _inserir_dependencias_componentes(componente_id_por_codigo, payload.componentes)
+    docente_id_por_nome = _inserir_docentes(ppc_id, payload.docentes)
+    _inserir_vinculos_docente_componente(docente_id_por_nome, componente_id_por_codigo, payload.docentes)
+    _inserir_ambientes(ppc_id, payload.ambientes)
+
+    return {"ppc_id": ppc_id}
+
+
 def duplicar_ppc(ppc_id: str) -> dict:
     """
     Duplica um PPC existente e todas as suas dependências no Supabase.

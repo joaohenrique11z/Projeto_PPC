@@ -655,4 +655,63 @@
         });
     });
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // CARREGAMENTO DE DADOS DO PPC EXISTENTE (modo edição)
+    // Esses eventos são despachados pelo ppc-submit.js após GET /api/ppc/{id}
+    // ─────────────────────────────────────────────────────────────────────────
+
+    document.addEventListener('ppc:dados-membros', (e) => {
+        membros = (e.detail || []).map(m => ({
+            tipo:  m.tipo  || '',
+            cargo: m.cargo || '',
+            nome:  m.nome  || '',
+        }));
+        sincronizarCrudState();
+        renderMembros();
+    });
+
+    document.addEventListener('ppc:dados-docentes', (e) => {
+        // Converte do formato API para o formato interno usado pelo crud.js
+        docentes = (e.detail || []).map(d => ({
+            nome:                    d.nome                     || '',
+            titulacao:               d.titulacao                || '',
+            regime:                  d.regime_trabalho          || '',
+            exp_docencia:            d.experiencia_docencia_anos || 0,
+            lattes:                  d.link_lattes              || '',
+            formacao:                d.formacao_academica       || '',
+            componentes_ministrados: d.componentes_ministrados  || [],
+        }));
+        sincronizarCrudState();
+        renderDocentes();
+    });
+
+    document.addEventListener('ppc:dados-ambientes', (e) => {
+        // Reconstrói ambientes[] e itensInfra[] a partir do payload aninhado
+        ambientes    = [];
+        itensInfra   = [];
+
+        (e.detail || []).forEach((amb, idx) => {
+            ambientes.push({
+                categoria: amb.categoria    || '',
+                nome:      amb.nome_ambiente || '',
+                quantidade: amb.quantidade  || 1,
+                area_m2:   amb.area_m2      || '',
+            });
+
+            (amb.itens || []).forEach(item => {
+                itensInfra.push({
+                    ambiente_idx:   idx,
+                    tipo:           item.tipo           || '',
+                    nome:           item.nome_item       || '',
+                    quantidade:     item.quantidade      || 1,
+                    especificacoes: item.especificacoes  || '',
+                });
+            });
+        });
+
+        sincronizarCrudState();
+        renderAmbientes();
+        renderItens();
+    });
+
 })();

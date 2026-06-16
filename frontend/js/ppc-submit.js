@@ -2,37 +2,50 @@
  * ppc-submit.js — Coleta os dados do formulário e envia para a API
  * Sistema Gerador de PPC — IFPE Campus Belo Jardim
  *
+ * Modos de operação:
+ *   CRIAÇÃO — forms.html (sem ?id)  → POST /api/ppc
+ *   EDIÇÃO  — forms.html?id={uuid} → GET  /api/ppc/{id} (carrega dados)
+ *                                   → PUT  /api/ppc/{id} (salva alterações)
+ *
  * Depende de:
- *   - window.__componentesState  (exposto pelo componentes.js após cada add/edit/remove)
- *   - window.__crudState         (exposto pelo crud.js após cada add/edit/remove)
+ *   - window.__componentesState  (exposto pelo componentes.js)
+ *   - window.__crudState         (exposto pelo crud.js)
  */
 
 (function () {
     'use strict';
 
-    /**
-     * Lê um campo de texto do DOM pelo id.
-     * @param {string} id
-     * @returns {string|null}
-     */
+    /** UUID do PPC em edição. null = modo criação. */
+    window.__ppcId = null;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // UTILITÁRIOS DE LEITURA / ESCRITA DO DOM
+    // ─────────────────────────────────────────────────────────────────────────
+
     function getText(id) {
         return document.getElementById(id)?.value?.trim() || null;
     }
 
-    /**
-     * Lê um campo numérico do DOM pelo id.
-     * @param {string} id
-     * @returns {number|null}
-     */
     function getInt(id) {
         const val = parseInt(document.getElementById(id)?.value, 10);
         return isNaN(val) ? null : val;
     }
 
     /**
-     * Monta o objeto ppc com todos os dados do curso preenchidos nos forms.
-     * @returns {Object}
+     * Define o valor de um campo do DOM pelo id.
+     * Não lança erro se o elemento não existir.
      */
+    function setField(id, value) {
+        const el = document.getElementById(id);
+        if (el && value !== null && value !== undefined) {
+            el.value = value;
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // MONTAGEM DO PAYLOAD (leitura do DOM → objeto para a API)
+    // ─────────────────────────────────────────────────────────────────────────
+
     function buildPPC() {
         return {
             campus_name:                  getText('campus_name'),
@@ -47,11 +60,9 @@
             ato_legal:                    getText('ato_legal'),
             sitio_web:                    getText('sitio_web'),
             nome_curso:                   getText('nome_curso'),
-            // O HTML usa 'area_conhecimento' e 'eixo_tecnologico' para o mesmo campo
             area_conhecimento:            getText('area_conhecimento') || getText('eixo_tecnologico'),
             nivel:                        getText('nivel'),
             modalidade_curso:             getText('modalidade_curso'),
-            // 'tipo_curso' no HTML equivale a 'titulacao' no modelo
             titulacao:                    getText('titulacao') || getText('tipo_curso'),
             ch_total_relogio:             getInt('ch_total_relogio'),
             ch_total_aula:                getInt('ch_total_aula'),
@@ -81,37 +92,28 @@
         };
     }
 
-    /**
-     * Coleta os dados do coordenador do curso a partir dos campos do formulário.
-     * Retorna null se o nome do coordenador não foi preenchido.
-     * @returns {Object|null}
-     */
     function buildCoordenacao() {
         const nome = getText('coord_nome');
         if (!nome) return null;
 
         return {
-            nome_professor:          nome,
-            regime_trabalho:         getText('coord_regime_trabalho'),
-            ch_semanal_coordenacao:  getInt('coord_ch_semanal'),
-            tempo_exercicio_ies:     getText('coord_tempo_ies'),
-            tempo_coordenacao_curso: getText('coord_tempo_curso'),
-            qualificacao:            getText('coord_qualificacao'),
-            titulacao:               getText('coord_titulacao'),
-            grupos_pesquisa:         getText('coord_grupos_pesquisa'),
-            linhas_pesquisa:         getText('coord_linhas_pesquisa'),
+            nome_professor:           nome,
+            regime_trabalho:          getText('coord_regime_trabalho'),
+            ch_semanal_coordenacao:   getInt('coord_ch_semanal'),
+            tempo_exercicio_ies:      getText('coord_tempo_ies'),
+            tempo_coordenacao_curso:  getText('coord_tempo_curso'),
+            qualificacao:             getText('coord_qualificacao'),
+            titulacao:                getText('coord_titulacao'),
+            grupos_pesquisa:          getText('coord_grupos_pesquisa'),
+            linhas_pesquisa:          getText('coord_linhas_pesquisa'),
             experiencia_profissional: getInt('coord_exp_profissional'),
-            experiencia_gestao:      getText('coord_exp_gestao'),
-            email:                   getText('coord_email'),
+            experiencia_gestao:       getText('coord_exp_gestao'),
+            email:                    getText('coord_email'),
         };
     }
 
-    /**
-     * Monta o payload completo lendo os estados globais expostos pelos outros módulos.
-     * @returns {Object}
-     */
     function buildPayload() {
-        const crudState = window.__crudState || { membros: [], docentes: [], ambientes: [] };
+        const crudState  = window.__crudState || { membros: [], docentes: [], ambientes: [] };
         const componentes = window.__componentesState || [];
 
         return {
@@ -124,9 +126,98 @@
         };
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // CARREGAMENTO DE DADOS PARA EDIÇÃO (GET /api/ppc/{id})
+    // ─────────────────────────────────────────────────────────────────────────
+
     /**
-     * Envia o payload para a API e trata sucesso/erro.
+     * Popula os campos do formulário com os dados gerais do PPC.
+     * @param {Object} ppc - Dados vindos do backend.
      */
+    function popularCamposPPC(ppc) {
+        const camposDiretos = [
+            'campus_name', 'cnpj', 'cep', 'cidade', 'bairro', 'rua', 'numero',
+            'telefone_fax', 'email_contato', 'ato_legal', 'sitio_web', 'nome_curso',
+            'nivel', 'modalidade_curso', 'titulacao',
+            'ch_total_relogio', 'ch_total_aula', 'duracao_aula_minutos',
+            'atividades_complementares', 'ch_extensao',
+            'integralizacao_min_semestres', 'integralizacao_max_semestres',
+            'semanas_letivas', 'periodicidade_letiva', 'inicio_curso',
+            'matriz_curricular_alterada', 'formas_acesso', 'pre_requisito_ingresso',
+            'vagas_anuais', 'vagas_turno', 'turnos', 'regime_matricula',
+            'cursos_tecnicos_afins', 'outros_cursos_campus',
+            'conceito_cc', 'conceito_cpc', 'conceito_enade', 'igc',
+            'tipo_reformulacao', 'status_curso',
+        ];
+        camposDiretos.forEach(campo => setField(campo, ppc[campo]));
+
+        // Aliases usados em algumas versões do HTML
+        setField('area_conhecimento', ppc.area_conhecimento);
+        setField('eixo_tecnologico',  ppc.area_conhecimento);
+        setField('tipo_curso',        ppc.nivel);
+    }
+
+    /**
+     * Popula os campos de coordenação com os dados vindos do backend.
+     * @param {Object} coord
+     */
+    function popularCamposCoordenacao(coord) {
+        const mapa = {
+            nome_professor:           'coord_nome',
+            regime_trabalho:          'coord_regime_trabalho',
+            ch_semanal_coordenacao:   'coord_ch_semanal',
+            tempo_exercicio_ies:      'coord_tempo_ies',
+            tempo_coordenacao_curso:  'coord_tempo_curso',
+            qualificacao:             'coord_qualificacao',
+            titulacao:                'coord_titulacao',
+            grupos_pesquisa:          'coord_grupos_pesquisa',
+            linhas_pesquisa:          'coord_linhas_pesquisa',
+            experiencia_profissional: 'coord_exp_profissional',
+            experiencia_gestao:       'coord_exp_gestao',
+            email:                    'coord_email',
+        };
+        Object.entries(mapa).forEach(([apiCampo, domId]) => setField(domId, coord[apiCampo]));
+    }
+
+    /**
+     * Carrega os dados de um PPC existente via GET e popula o formulário.
+     * Despacha eventos customizados para que crud.js e componentes.js
+     * populem seus estados internos.
+     *
+     * Componentes devem ser despachados ANTES dos docentes para que os
+     * checkboxes de "componentes ministrados" sejam corretamente marcados.
+     *
+     * @param {string} id - UUID do PPC.
+     */
+    async function carregarDadosPPC(id) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/ppc/${id}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const dados = await response.json();
+
+            popularCamposPPC(dados.ppc || {});
+
+            if (dados.coordenacao) {
+                popularCamposCoordenacao(dados.coordenacao);
+            }
+
+            document.dispatchEvent(new CustomEvent('ppc:dados-componentes', { detail: dados.componentes || [] }));
+            document.dispatchEvent(new CustomEvent('ppc:dados-membros',     { detail: dados.membros     || [] }));
+            document.dispatchEvent(new CustomEvent('ppc:dados-docentes',    { detail: dados.docentes    || [] }));
+            document.dispatchEvent(new CustomEvent('ppc:dados-ambientes',   { detail: dados.ambientes   || [] }));
+
+            console.log('[ppc-load] PPC carregado:', id);
+        } catch (error) {
+            console.error('[ppc-load] Erro ao carregar PPC:', error);
+            alert(`Não foi possível carregar os dados do PPC:\n${error.message}`);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // SUBMISSÃO (POST criação / PUT edição)
+    // ─────────────────────────────────────────────────────────────────────────
+
     async function submeterPPC() {
         const btnConfirmar = document.getElementById('btn-confirmar-envio');
 
@@ -142,13 +233,16 @@
         }
 
         const payload = buildPayload();
+        console.log('[ppc-submit] Payload:', JSON.stringify(payload, null, 2));
 
-        // Log para depuração — remove antes de ir para produção
-        console.log('[ppc-submit] Payload a enviar:', JSON.stringify(payload, null, 2));
+        // Modo edição → PUT; modo criação → POST
+        const ppcId  = window.__ppcId;
+        const url    = ppcId ? `http://localhost:8000/api/ppc/${ppcId}` : 'http://localhost:8000/api/ppc';
+        const method = ppcId ? 'PUT' : 'POST';
 
         try {
-            const response = await fetch('http://localhost:8000/api/ppc', {
-                method: 'POST',
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
@@ -158,7 +252,6 @@
                 throw new Error(errData.detail || `Erro HTTP ${response.status}`);
             }
 
-            // Sucesso — redireciona para a listagem
             window.location.href = 'index.html';
 
         } catch (error) {
@@ -177,14 +270,22 @@
         }
     }
 
-    /**
-     * Aguarda o evento 'ppc:submit' despachado pelo validation.js
-     * somente após todas as validações terem passado.
-     * O botão "Enviar PPC" NÃO abre o modal de confirmação diretamente —
-     * isso é responsabilidade exclusiva do validation.js.
-     */
+    // ─────────────────────────────────────────────────────────────────────────
+    // INICIALIZAÇÃO
+    // ─────────────────────────────────────────────────────────────────────────
+
     document.addEventListener('DOMContentLoaded', function () {
+        // Escuta o evento disparado pelo validation.js após validação
         document.addEventListener('ppc:submit', submeterPPC);
+
+        // Detecta modo de edição via ?id= na URL
+        const params = new URLSearchParams(window.location.search);
+        const ppcId  = params.get('id');
+
+        if (ppcId) {
+            window.__ppcId = ppcId;
+            carregarDadosPPC(ppcId);
+        }
     });
 
 })();

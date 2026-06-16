@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from database import supabase
 from models.ppc import PPCPayload
-from services.ppc_service import salvar_ppc, duplicar_ppc
+from services.ppc_service import salvar_ppc, duplicar_ppc, carregar_ppc, atualizar_ppc
 
 router = APIRouter(prefix="/api/ppc", tags=["PPC"])
 
@@ -100,6 +100,48 @@ def criar_ppc(payload: PPCPayload):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao salvar PPC: {str(exc)}",
+        )
+
+
+@router.get("/{ppc_id}")
+def obter_ppc(ppc_id: str):
+    """
+    Retorna um PPC completo com todas as entidades filhas.
+    Usado pela tela de edição para popular todos os campos do formulário.
+    """
+    try:
+        resultado = carregar_ppc(ppc_id)
+        return resultado
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(val_err)
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao carregar PPC: {str(exc)}",
+        )
+
+
+@router.put("/{ppc_id}")
+def editar_ppc(ppc_id: str, payload: PPCPayload):
+    """
+    Atualiza um PPC existente e todas as suas entidades filhas.
+    Usa estratégia delete + reinsert para simplicidade e consistência.
+    """
+    try:
+        resultado = atualizar_ppc(ppc_id, payload)
+        return resultado
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(val_err)
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao atualizar PPC: {str(exc)}",
         )
 
 
