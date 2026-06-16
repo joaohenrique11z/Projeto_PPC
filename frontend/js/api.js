@@ -140,6 +140,38 @@ async function submeterDadosPPC(botaoSubmit) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// AUTOSAVE — Envia apenas mudanças (delta)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Autosave PATCH: envia apenas os campos que mudaram.
+ * Chamado por autosave.js durante o debounce de 3 segundos.
+ *
+ * @param {string} ppcId - UUID do PPC
+ * @param {object} delta - Mudanças parciais (apenas campos alterados)
+ * @returns {Promise<{success, ppc_id, version, message}>}
+ */
+async function autosavePPC(ppcId, delta) {
+  try {
+    const resposta = await fetch(`${API_BASE}/ppc/${ppcId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(delta),
+    });
+
+    if (!resposta.ok) {
+      const erro = await resposta.json().catch(() => ({}));
+      throw new Error(erro.detail || `HTTP ${resposta.status}`);
+    }
+
+    return await resposta.json();
+  } catch (erro) {
+    console.error('Erro no autosave:', erro);
+    throw erro;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // Sincroniza o form de componentes para acumular no estado
 // ─────────────────────────────────────────────────────────────
 

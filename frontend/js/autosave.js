@@ -247,24 +247,15 @@ const autosaveManager = {
 
   /**
    * Envia PATCH request ao backend com o delta.
+   * Reutiliza função autosavePPC() definida em api.js
    */
   async sendAutosavePatch(ppcId, delta) {
-    const url = `${API_BASE}/ppc/${ppcId}`;
-
-    const response = await fetch(url, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(delta),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || `HTTP ${response.status}`);
+    // Garante que autosavePPC está disponível (definida em api.js)
+    if (typeof autosavePPC !== 'function') {
+      throw new Error('autosavePPC não disponível. Verifique se api.js foi carregado.');
     }
 
-    return await response.json();
+    return await autosavePPC(ppcId, delta);
   },
 
   // ─────────────────────────────────────────────────────────
