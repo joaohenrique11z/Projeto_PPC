@@ -14,6 +14,7 @@ from datetime import datetime
 from database import supabase
 from models.ppc import PPCPayload
 from services.ppc_service import salvar_ppc, duplicar_ppc, carregar_ppc, atualizar_ppc, deletar_ppc
+from services.document_service import document_service
 
 router = APIRouter(prefix="/api/ppc", tags=["PPC"])
 
@@ -184,4 +185,22 @@ def deletar_ppc_endpoint(ppc_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao deletar PPC: {str(exc)}",
+        )
+
+
+@router.get("/{ppc_id}/exportar")
+def exportar_ppc(ppc_id: str):
+    """
+    Gera e exporta o documento do PPC (DOCX/PDF).
+    
+    Atualmente retorna apenas os dados estruturados (stub)
+    para o preenchimento do template.
+    """
+    try:
+        resultado = document_service.generate_ppc_document(ppc_id)
+        return resultado
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao exportar documento do PPC: {str(exc)}",
         )
