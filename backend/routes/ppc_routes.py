@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from database import supabase
 from models.ppc import PPCPayload
-from services.ppc_service import salvar_ppc, duplicar_ppc, carregar_ppc, atualizar_ppc, deletar_ppc
+from services.ppc_service import salvar_ppc, duplicar_ppc, carregar_ppc, atualizar_ppc, deletar_ppc, aplicar_delta_ppc
 
 router = APIRouter(prefix="/api/ppc", tags=["PPC"])
 
@@ -142,6 +142,49 @@ def editar_ppc(ppc_id: str, payload: PPCPayload):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao atualizar PPC: {str(exc)}",
+        )
+
+
+@router.patch("/{ppc_id}")
+def autosave_ppc(ppc_id: str, delta: dict):
+    """
+    Aplica um delta (mudanças parciais) a um PPC existente.
+
+    Este endpoint é chamado pelo frontend durante o autosave.
+    Recebe apenas os campos que foram modificados, não o formulário completo.
+
+    Delta esperado (todos os campos opcionais):
+    {
+        "ppc": {"nome_curso": "...", "ch_total_relogio": 2400},  # campos simples
+        "membros": [...],          # se presente, deleta antigos e insere novos
+        "coordenacao": {...},      # se presente, deleta antiga e insere nova
+        "componentes": [...],      # se presente, deleta antigos e insere novos
+        "docentes": [...],         # se presente, deleta antigos e insere novos
+        "ambientes": [...]         # se presente, deleta antigos e insere novos
+    }
+
+    Campos omitidos no delta não são tocados no banco.
+
+    Returns:
+        {
+            "success": true,
+            "ppc_id": "uuid",
+            "version": "2025-01-15T10:30:45Z",
+            "message": "Alterações salvas automaticamente"
+        }
+    """
+    try:
+        resultado = aplicar_delta_ppc(ppc_id, delta)
+        return resultado
+    except ValueError as val_err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(val_err)
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao autosave PPC: {str(exc)}",
         )
 
 
