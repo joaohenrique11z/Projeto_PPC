@@ -60,6 +60,31 @@
         }
     }
 
+    /**
+     * Alterna o estado de loading de um botão.
+     * Desabilita durante loading e reabilita ao finalizar.
+     */
+    function alternarLoadingBotao(botao, carregando, textCarregando = 'Carregando...') {
+        if (!botao) return;
+        if (carregando) {
+            botao._textOriginal = botao.textContent;
+            botao._loadingStart = Date.now();
+            botao.disabled = true;
+            botao.classList.add('opacity-70', 'cursor-not-allowed');
+            botao.innerHTML = '<span class="inline-flex items-center gap-2"><svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>' + textCarregando + '</span>';
+        } else {
+            // Garante que o loading fique visível por pelo menos 500ms
+            const tempoDecorrido = Date.now() - (botao._loadingStart || Date.now());
+            const tempoRestante = Math.max(0, 500 - tempoDecorrido);
+            
+            setTimeout(() => {
+                botao.disabled = false;
+                botao.classList.remove('opacity-70', 'cursor-not-allowed');
+                botao.textContent = botao._textOriginal || textCarregando;
+            }, tempoRestante);
+        }
+    }
+
     /* ================================================================== */
     /* CARREGAMENTO DE DADOS DA API                                       */
     /* ================================================================== */
@@ -159,8 +184,7 @@
      */
     async function duplicarPPCViaAPI(id) {
         try {
-            // Pode opcionalmente mostrar loading em algum lugar
-            // alert("Duplicando PPC...");
+            alternarLoadingBotao(btnConfirmarAcao, true, 'Duplicando...');
             const response = await fetch(`${API_BASE}/ppc/${id}/duplicar`, {
                 method: 'POST',
                 headers: {
@@ -195,6 +219,8 @@
         } catch (erro) {
             console.error('Erro ao duplicar PPC via API:', erro);
             exibirNotificacao('Erro ao duplicar PPC', 'erro');
+        } finally {
+            alternarLoadingBotao(btnConfirmarAcao, false);
         }
     }
 
@@ -276,11 +302,8 @@
      * Deleta um PPC
      */
     async function deletarPPC(id) {
-        const originalText = btnConfirmarAcao.textContent;
-        btnConfirmarAcao.disabled = true;
-        btnConfirmarAcao.textContent = 'Excluindo...';
-
         try {
+            alternarLoadingBotao(btnConfirmarAcao, true, 'Excluindo...');
             const apiBase = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:8000/api';
             
             // Verifica se o ID é longo o suficiente para ser um UUID do backend.
@@ -316,8 +339,7 @@
                 alert(`Erro ao excluir: ${erro.message}`);
             }
         } finally {
-            btnConfirmarAcao.disabled = false;
-            btnConfirmarAcao.textContent = originalText;
+            alternarLoadingBotao(btnConfirmarAcao, false);
         }
     }
 
@@ -468,7 +490,7 @@
         if (acaoModal === 'delete') {
             await deletarPPC(ppcIdModal);
         } else if (acaoModal === 'duplicate') {
-            duplicarPPCViaAPI(ppcIdModal);
+            await duplicarPPCViaAPI(ppcIdModal);
             fecharModalAcao();
         }
     });
