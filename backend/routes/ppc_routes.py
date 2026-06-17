@@ -8,12 +8,16 @@ Rotas:
   GET  /api/ppc       — lista todos os PPCs (id, nome_curso, status_curso, data_ultima_atualizacao)
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, BackgroundTasks
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from datetime import datetime
 from database import supabase
 from models.ppc import PPCPayload
 from services.ppc_service import salvar_ppc, duplicar_ppc, carregar_ppc, atualizar_ppc, deletar_ppc
+from services.document_service import document_service
+from services.ppc_doc_generator import generate_document, DocumentGenerationError
+from services.ppc_odt_generator import generate_odt_document, ODTGenerationError
 
 router = APIRouter(prefix="/api/ppc", tags=["PPC"])
 
@@ -145,6 +149,66 @@ def editar_ppc(ppc_id: str, payload: PPCPayload):
         )
 
 
+@router.get("/{ppc_id}/exportar/docx")
+def exportar_docx(ppc_id: str, background_tasks: BackgroundTasks):
+    """
+    Gera e retorna o PPC completo no formato DOCX.
+
+    O documento é gerado em tempo real a partir dos dados do banco,
+    usando o template Word localizado em templates/doc_ppc_modelo.docx.
+    O arquivo é enviado ao cliente e removido do servidor em seguida.
+    """
+    try:
+        output_path = generate_document(ppc_id)
+    except DocumentGenerationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro inesperado ao gerar documento: {str(exc)}",
+        )
+
+    # Remove o arquivo do disco após o envio para não acumular exports
+    background_tasks.add_task(output_path.unlink, missing_ok=True)
+
+    return FileResponse(
+        path=str(output_path),
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=output_path.name,
+    )
+
+
+@router.get("/{ppc_id}/exportar/odt")
+def exportar_odt(ppc_id: str, background_tasks: BackgroundTasks):
+    """
+    Gera e retorna o PPC completo no formato ODT.
+    """
+    try:
+        output_path = generate_odt_document(ppc_id)
+    except ODTGenerationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro inesperado ao gerar documento: {str(exc)}",
+        )
+
+    # Remove o arquivo do disco após o envio
+    background_tasks.add_task(output_path.unlink, missing_ok=True)
+
+    return FileResponse(
+        path=str(output_path),
+        media_type="application/vnd.oasis.opendocument.text",
+        filename=output_path.name,
+    )
+
+
 @router.get("")
 def listar_ppcs():
     """
@@ -184,4 +248,22 @@ def deletar_ppc_endpoint(ppc_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao deletar PPC: {str(exc)}",
+        )
+
+
+@router.get("/{ppc_id}/exportar")
+def exportar_ppc(ppc_id: str):
+    """
+    Gera e exporta o documento do PPC (DOCX/PDF).
+    
+    Atualmente retorna apenas os dados estruturados (stub)
+    para o preenchimento do template.
+    """
+    try:
+        resultado = document_service.generate_ppc_document(ppc_id)
+        return resultado
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao exportar documento do PPC: {str(exc)}",
         )
