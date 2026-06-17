@@ -403,6 +403,9 @@
                     <button type="button" class="btn-duplicar text-green-600 hover:text-green-800 text-xs font-medium" data-id="${ppc.id}">
                         Duplicar
                     </button>
+                    <button type="button" class="btn-exportar-docx text-purple-600 hover:text-purple-800 text-xs font-medium" data-id="${ppc.id}">
+                        ↓ DOCX
+                    </button>
                     <button type="button" class="btn-deletar text-red-600 hover:text-red-800 text-xs font-medium" data-id="${ppc.id}">
                         Deletar
                     </button>
@@ -433,6 +436,12 @@
 
         document.querySelectorAll('.btn-duplicar').forEach(btn => {
             btn.addEventListener('click', () => confirmarDuplica(btn.dataset.id));
+        });
+
+        document.querySelectorAll('.btn-exportar-docx').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.location.href = `/api/ppc/${btn.dataset.id}/exportar/docx`;
+            });
         });
     }
 
