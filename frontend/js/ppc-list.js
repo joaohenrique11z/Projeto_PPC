@@ -442,14 +442,11 @@
                     <button type="button" class="btn-exportar-docx text-purple-600 hover:text-purple-800 text-xs font-medium" data-id="${ppc.id}">
                         ↓ DOCX
                     </button>
+                    <button type="button" class="btn-exportar-odt text-orange-600 hover:text-orange-800 text-xs font-medium" data-id="${ppc.id}">
+                        ↓ ODT
+                    </button>
                     <button type="button" class="btn-deletar text-red-600 hover:text-red-800 text-xs font-medium" data-id="${ppc.id}">
                         Deletar
-                    </button>
-                    <button type="button" class="btn-exportar inline-flex items-center gap-1 px-2.5 py-1 bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium rounded transition-colors" data-id="${ppc.id}">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        Exportar
                     </button>
                 </div>
             `;
@@ -480,13 +477,15 @@
             btn.addEventListener('click', () => confirmarDuplica(btn.dataset.id));
         });
 
-        document.querySelectorAll('.btn-exportar').forEach(btn => {
-            btn.addEventListener('click', () => exportarPPC(btn.dataset.id, btn));
-        });
-
         document.querySelectorAll('.btn-exportar-docx').forEach(btn => {
             btn.addEventListener('click', () => {
                 window.location.href = `/api/ppc/${btn.dataset.id}/exportar/docx`;
+            });
+        });
+
+        document.querySelectorAll('.btn-exportar-odt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                window.location.href = `/api/ppc/${btn.dataset.id}/exportar/odt`;
             });
         });
     }
