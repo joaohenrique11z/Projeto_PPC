@@ -8,6 +8,7 @@
  *  - Editar PPC (redireciona para forms.html)
  *  - Deletar PPC
  *  - Duplicar PPC
+ *  - Exportar PPC (chama endpoint /api/ppc/{id}/exportar)
  *  - Persistir dados em localStorage
  */
 
@@ -340,6 +341,41 @@
         renderizarTabela();
     }
 
+    /**
+     * Exporta um PPC chamando o endpoint de geração de documento.
+     * Exibe feedback de carregamento no próprio botão durante a requisição.
+     */
+    async function exportarPPC(id, btnExportar) {
+        const textoOriginal = btnExportar.innerHTML;
+        btnExportar.disabled = true;
+        btnExportar.innerHTML = `
+            <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Exportando...
+        `;
+
+        try {
+            const response = await fetch(`${API_BASE}/ppc/${id}/exportar`);
+
+            if (!response.ok) {
+                const erro = await response.json().catch(() => ({}));
+                throw new Error(erro.detail || `Erro ${response.status}`);
+            }
+
+            const resultado = await response.json();
+            console.log('Dados exportados do PPC:', resultado);
+            exibirNotificacao('PPC exportado com sucesso!', 'sucesso');
+        } catch (erro) {
+            console.error('Erro ao exportar PPC:', erro);
+            exibirNotificacao(`Erro ao exportar: ${erro.message}`, 'erro');
+        } finally {
+            btnExportar.disabled = false;
+            btnExportar.innerHTML = textoOriginal;
+        }
+    }
+
     /* ================================================================== */
     /* RENDERIZAÇÃO                                                        */
     /* ================================================================== */
@@ -406,6 +442,12 @@
                     <button type="button" class="btn-deletar text-red-600 hover:text-red-800 text-xs font-medium" data-id="${ppc.id}">
                         Deletar
                     </button>
+                    <button type="button" class="btn-exportar inline-flex items-center gap-1 px-2.5 py-1 bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium rounded transition-colors" data-id="${ppc.id}">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Exportar
+                    </button>
                 </div>
             `;
             
@@ -433,6 +475,10 @@
 
         document.querySelectorAll('.btn-duplicar').forEach(btn => {
             btn.addEventListener('click', () => confirmarDuplica(btn.dataset.id));
+        });
+
+        document.querySelectorAll('.btn-exportar').forEach(btn => {
+            btn.addEventListener('click', () => exportarPPC(btn.dataset.id, btn));
         });
     }
 
