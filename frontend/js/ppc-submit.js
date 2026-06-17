@@ -239,6 +239,28 @@
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // UTILITÁRIOS DE NOTIFICAÇÃO
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Exibe uma notificação visual flutuante no canto superior direito da tela.
+     * @param {string} mensagem - Texto da notificação
+     * @param {string} tipo - Tipo de notificação: 'sucesso', 'erro', 'info'
+     */
+    function exibirNotificacao(mensagem, tipo = 'sucesso') {
+        const cores = {
+            sucesso: 'bg-green-600',
+            erro: 'bg-red-600',
+            info: 'bg-blue-600'
+        };
+        const notificacao = document.createElement('div');
+        notificacao.className = `fixed top-4 right-4 z-50 px-5 py-3 rounded shadow-lg text-white text-sm font-medium transition-all ${cores[tipo]}`;
+        notificacao.textContent = mensagem;
+        document.body.appendChild(notificacao);
+        setTimeout(() => notificacao.remove(), 3500);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // SUBMISSÃO (POST criação / PUT edição)
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -276,7 +298,16 @@
                 throw new Error(errData.detail || `Erro HTTP ${response.status}`);
             }
 
-            window.location.href = 'index.html';
+            // Sucesso (2XX)
+            const dados = await response.json();
+            const ppcId = dados.ppc_id || dados.id || 'novo';
+            exibirNotificacao(`✓ PPC enviado com sucesso! ID: ${ppcId.slice(0, 8)}...`, 'sucesso');
+            console.log('[ppc-submit] PPC enviado com sucesso:', ppcId);
+
+            // Redireciona após um pequeno delay para o usuário ver a notificação
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
 
         } catch (error) {
             console.error('[ppc-submit] Erro ao enviar:', error);
