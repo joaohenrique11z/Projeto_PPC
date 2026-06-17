@@ -37,13 +37,13 @@ frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
 # Servir arquivos estáticos (JS, CSS, etc)
 app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 
-# Catch-all para servir arquivos do frontend e SPA routing
+# Catch-all para servir arquivos do frontend (nunca intercepta rotas /api/*)
 @app.get("/{file_path:path}", include_in_schema=False)
 async def serve_frontend(file_path: str):
-    """Serve arquivos do frontend. Se o arquivo não existir, retorna index.html (SPA)."""
-    
-    # Evitar servir arquivos da API
-    if file_path.startswith("api/"):
+    """Serve arquivos do frontend. Rotas /api/* nunca chegam aqui pois os routers têm prioridade."""
+
+    # Rotas /api/* devem ser tratadas pelos routers — se chegaram aqui é 404 real
+    if file_path.startswith("api/") or file_path == "api":
         # Deixar que a API trate (vai retornar 404 normalmente)
         from fastapi import HTTPException
         raise HTTPException(status_code=404)
