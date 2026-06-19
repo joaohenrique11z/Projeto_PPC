@@ -199,9 +199,11 @@ def _section_identificacao(doc: OpenDocumentText, ppc: dict) -> None:
     _table_2col(doc, [
         ("Curso", ppc.get("nome_curso", "")),
         ("Nível", ppc.get("nivel", "")),
+        ("Tipo de Curso", ppc.get("tipo_curso", "")),
         ("Modalidade", ppc.get("modalidade_curso", "")),
         ("Titulação", ppc.get("titulacao", "")),
         ("Área do Conhecimento", ppc.get("area_conhecimento", "")),
+        ("Eixo Tecnológico", ppc.get("eixo_tecnologico", "")),
         ("Carga Horária Total (h/r)", _str(ppc.get("ch_total_relogio"))),
         ("Carga Horária Total (h/a)", _str(ppc.get("ch_total_aula"))),
         ("Duração da Aula (min)", _str(ppc.get("duracao_aula_minutos"))),

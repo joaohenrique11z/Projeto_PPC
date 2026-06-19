@@ -401,9 +401,19 @@
                                 <div>
                                     <label for="area_conhecimento" class="block text-sm text-gray-700 mb-1">Área do
                                         Conhecimento *</label>
-                                    <input type="text" id="area_conhecimento" name="area_conhecimento" required
-                                        placeholder="Ex: Ciências Exatas e da Terra"
+                                    <select id="area_conhecimento" name="area_conhecimento" required
                                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Selecione...</option>
+                                        <option value="Ciências Exatas e da Terra">Ciências Exatas e da Terra</option>
+                                        <option value="Ciências Biológicas">Ciências Biológicas</option>
+                                        <option value="Engenharias">Engenharias</option>
+                                        <option value="Ciências da Saúde">Ciências da Saúde</option>
+                                        <option value="Ciências Agrárias">Ciências Agrárias</option>
+                                        <option value="Ciências Sociais Aplicadas">Ciências Sociais Aplicadas</option>
+                                        <option value="Ciências Humanas">Ciências Humanas</option>
+                                        <option value="Linguística, Letras e Artes">Linguística, Letras e Artes</option>
+                                        <option value="Multidisciplinar">Multidisciplinar</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
@@ -447,9 +457,22 @@
                                 <div>
                                     <label for="eixo_tecnologico" class="block text-sm text-gray-700 mb-1">Eixo
                                         Tecnológico</label>
-                                    <input type="text" id="eixo_tecnologico" name="eixo_tecnologico"
-                                        placeholder="Ex: Informação e Comunicação"
+                                    <select id="eixo_tecnologico" name="eixo_tecnologico"
                                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Selecione...</option>
+                                        <option value="Ambiente e Saúde">Ambiente e Saúde</option>
+                                        <option value="Controle e Processos Industriais">Controle e Processos Industriais</option>
+                                        <option value="Desenvolvimento Educacional e Social">Desenvolvimento Educacional e Social</option>
+                                        <option value="Gestão e Negócios">Gestão e Negócios</option>
+                                        <option value="Informação e Comunicação">Informação e Comunicação</option>
+                                        <option value="Infraestrutura">Infraestrutura</option>
+                                        <option value="Produção Alimentícia">Produção Alimentícia</option>
+                                        <option value="Produção Cultural e Design">Produção Cultural e Design</option>
+                                        <option value="Produção Industrial">Produção Industrial</option>
+                                        <option value="Recursos Naturais">Recursos Naturais</option>
+                                        <option value="Segurança">Segurança</option>
+                                        <option value="Turismo, Hospitalidade e Lazer">Turismo, Hospitalidade e Lazer</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label for="titulacao" class="block text-sm text-gray-700 mb-1">Titulação Conferida
@@ -1140,9 +1163,9 @@
                                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
                                 <div>
-                                    <label for="coord_tempo_coord" class="block text-sm text-gray-700 mb-1">Tempo na
+                                    <label for="coord_tempo_curso" class="block text-sm text-gray-700 mb-1">Tempo na
                                         Coordenação do Curso</label>
-                                    <input type="text" id="coord_tempo_coord" name="coord_tempo_coord"
+                                    <input type="text" id="coord_tempo_curso" name="coord_tempo_curso"
                                         placeholder="Ex: 2 anos"
                                         class="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 </div>
@@ -1679,7 +1702,7 @@
     <script src="/static/js/componentes.js"></script>
     <script src="/static/js/tabs.js"></script>
     <script src="/static/js/crud.js"></script>
-    <script src="/static/js/ppc-submit.js"></script>
+    <script src="/static/js/ppc-submit.js?v=2"></script>
     <script src="/static/js/test-filler.js?v=5"></script>
 
 </body>
