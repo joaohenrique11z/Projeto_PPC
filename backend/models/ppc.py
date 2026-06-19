@@ -32,7 +32,9 @@ class PPCCreate(BaseModel):
     # Identificação acadêmica
     nome_curso: Optional[str] = None
     area_conhecimento: Optional[str] = None
+    eixo_tecnologico: Optional[str] = None
     nivel: Optional[str] = None
+    tipo_curso: Optional[str] = None
     modalidade_curso: Optional[str] = None
     titulacao: Optional[str] = None
 

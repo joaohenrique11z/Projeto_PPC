@@ -23,11 +23,11 @@ function preencherDadosTeste() {
     // Tab 2: Estrutura do Curso
     const estruturaCurso = {
         'nome_curso': getRandomItem(['Engenharia de Software', 'Sistemas de Informação', 'Ciência da Computação', 'Engenharia de Computação']),
-        'area_conhecimento': getRandomItem(['Ciências Exatas e da Terra', 'Engenharias', 'Ciências Aplicadas']),
-        'nivel': getRandomItem(['Graduação', 'Pós-Graduação']), 
+        'area_conhecimento': getRandomItem(['Ciências Exatas e da Terra', 'Ciências Biológicas', 'Engenharias', 'Ciências da Saúde', 'Ciências Agrárias', 'Ciências Sociais Aplicadas', 'Ciências Humanas', 'Linguística, Letras e Artes', 'Multidisciplinar']),
+        'nivel': getRandomItem(['Graduação', 'Técnico', 'Pós-Graduação Lato Sensu', 'Pós-Graduação Stricto Sensu']), 
         'tipo_curso': getRandomItem(['Bacharelado', 'Licenciatura', 'Tecnólogo']),
         'modalidade_curso': getRandomItem(['Presencial', 'EaD', 'Híbrido']),
-        'eixo_tecnologico': getRandomItem(['Informação e Comunicação', 'Controle e Processos Industriais', 'Gestão e Negócios']),
+        'eixo_tecnologico': getRandomItem(['Ambiente e Saúde', 'Controle e Processos Industriais', 'Desenvolvimento Educacional e Social', 'Gestão e Negócios', 'Informação e Comunicação', 'Infraestrutura', 'Produção Alimentícia', 'Produção Cultural e Design', 'Produção Industrial', 'Recursos Naturais', 'Segurança', 'Turismo, Hospitalidade e Lazer']),
         'titulacao': getRandomItem(['Bacharel', 'Licenciado', 'Tecnólogo']),
         'ch_total_relogio': getRandomItem(['3205', '3600', '4000']),
         'ch_total_aula': getRandomItem(['3846', '4320', '4800']),
@@ -79,7 +79,7 @@ function preencherDadosTeste() {
         'coord_ch_semanal': getRandomItem(['20', '10', '40']),
         'coord_qualificacao': getRandomItem(['Doutor em Informática', 'Mestre em Ciência da Computação', 'Doutor em Engenharia de Software']),
         'coord_tempo_ies': getRandomItem(['10 anos', '5 anos', '15 anos']),
-        'coord_tempo_coord': getRandomItem(['3 anos', '1 ano', '5 anos']),
+        'coord_tempo_curso': getRandomItem(['3 anos', '1 ano', '5 anos']),
         'coord_grupos_pesquisa': getRandomItem(['Engenharia de Software Aplicada', 'Inteligência Artificial', 'Redes e Segurança']),
         'coord_linhas_pesquisa': getRandomItem(['Qualidade de Software', 'Machine Learning', 'Cibersegurança']),
         'coord_exp_profissional': getRandomItem(['15', '10', '8', '20']),

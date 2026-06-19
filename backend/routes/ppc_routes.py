@@ -134,6 +134,7 @@ def editar_ppc(ppc_id: str, payload: PPCPayload):
     Atualiza um PPC existente e todas as suas entidades filhas.
     Usa estratégia delete + reinsert para simplicidade e consistência.
     """
+    print(f"DEBUG BACKEND - Payload Recebido: tipo_curso={payload.ppc.tipo_curso}, eixo={payload.ppc.eixo_tecnologico}")
     try:
         resultado = atualizar_ppc(ppc_id, payload)
         return resultado

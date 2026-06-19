@@ -60,10 +60,12 @@
             ato_legal:                    getText('ato_legal'),
             sitio_web:                    getText('sitio_web'),
             nome_curso:                   getText('nome_curso'),
-            area_conhecimento:            getText('area_conhecimento') || getText('eixo_tecnologico'),
+            area_conhecimento:            getText('area_conhecimento'),
+            eixo_tecnologico:             getText('eixo_tecnologico'),
             nivel:                        getText('nivel'),
+            tipo_curso:                   getText('tipo_curso'),
             modalidade_curso:             getText('modalidade_curso'),
-            titulacao:                    getText('titulacao') || getText('tipo_curso'),
+            titulacao:                    getText('titulacao'),
             ch_total_relogio:             getInt('ch_total_relogio'),
             ch_total_aula:                getInt('ch_total_aula'),
             duracao_aula_minutos:         getInt('duracao_aula_minutos'),
@@ -153,8 +155,8 @@
 
         // Aliases usados em algumas versões do HTML
         setField('area_conhecimento', ppc.area_conhecimento);
-        setField('eixo_tecnologico',  ppc.area_conhecimento);
-        setField('tipo_curso',        ppc.nivel);
+        setField('eixo_tecnologico',  ppc.eixo_tecnologico);
+        setField('tipo_curso',        ppc.tipo_curso);
     }
 
     /**
