@@ -1,0 +1,19 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  security:
+    uses: joaohenrique11z/teste_esteira/.github/workflows/pipeline.yml@v1
+    with:
+      project_name: 'projeto-ppc'          # Nome usado no DefectDojo
+      stack_type: 'python'                    # Opções: node, dotnet, python, java, cpp, go, rust
+      run_dast: false                        # true = executa OWASP ZAP
+      #dast_target_url: 'https://staging.meu-projeto.com'  # Obrigatório se run_dast: true
+    secrets:
+      DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
+      DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
